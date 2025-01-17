@@ -21,7 +21,7 @@ impl Triangle {
 fn main() {
     println!("Hello, world!");
 
-    let camera = Camera::new(16. / 9., 400);
+    let camera = Camera::new(16. / 9., 400, 100);
     let world = vec![
         Sphere::new(Point::new(0., 0., -1.), 0.5),
         Sphere::new(Point::new(0., -100.5, -1.), 100.),

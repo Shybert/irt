@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul};
+use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 pub struct Color {
     pub r: f32,
@@ -17,11 +17,21 @@ impl Add for Color {
         return Self::new(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b);
     }
 }
+impl AddAssign for Color {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = Self::new(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b)
+    }
+}
 impl Mul<f32> for Color {
     type Output = Self;
 
     fn mul(self, scalar: f32) -> Self::Output {
         return Self::new(self.r * scalar, self.g * scalar, self.b * scalar);
+    }
+}
+impl MulAssign<f32> for Color {
+    fn mul_assign(&mut self, scalar: f32) {
+        *self = Self::new(self.r * scalar, self.g * scalar, self.b * scalar);
     }
 }
 impl Mul<Color> for f32 {
