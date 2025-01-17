@@ -18,3 +18,6 @@ pub use interval::*;
 
 mod sphere;
 pub use sphere::*;
+
+mod camera;
+pub use camera::*;
