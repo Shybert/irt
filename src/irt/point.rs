@@ -27,7 +27,7 @@ impl Add<Vec3> for Point {
     type Output = Self;
 
     fn add(self, vec3: Vec3) -> Self::Output {
-        return Self::new(self.x + vec3.x, self.y + vec3.y, self.z - vec3.z);
+        return Self::new(self.x + vec3.x, self.y + vec3.y, self.z + vec3.z);
     }
 }
 impl Sub for Point {
