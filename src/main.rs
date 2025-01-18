@@ -1,6 +1,8 @@
 mod irt;
 use irt::*;
 
+use std::time::Instant;
+
 struct Triangle {
     v0: Point,
     v1: Point,
@@ -36,4 +38,6 @@ fn main() {
 
     let camera = Camera::new(16. / 9., 90., 400, 100);
     camera.render(&world.as_slice());
+
+    println!("Wall time: {:.1} s", start_time.elapsed().as_secs_f64());
 }
