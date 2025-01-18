@@ -17,12 +17,21 @@ impl Vec3 {
         return (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt();
     }
 
-    pub fn normalize(self) -> Self {
-        return self / self.magnitude();
+    pub fn normalize(&self) -> Self {
+        return *self / self.magnitude();
+    }
+
+    pub fn near_zero(&self) -> bool {
+        let threshold = 1e-8;
+        return self.x.abs() < threshold && self.y.abs() < threshold && self.z.abs() < threshold;
     }
 
     pub fn dot(&self, other: &Self) -> f32 {
         return self.x * other.x + self.y * other.y + self.z * other.z;
+    }
+
+    pub fn reflect(&self, other: &Self) -> Self {
+        return *self - 2. * self.dot(other) * *other;
     }
 
     pub fn random() -> Self {
@@ -43,7 +52,7 @@ impl Vec3 {
         loop {
             let random_vector = Self::random_interval(-1., 1.);
             let length_squared = random_vector.magnitude().powi(2);
-            if length_squared >= 1e-120 && length_squared <= 1. {
+            if (1e-120..=1.).contains(&length_squared) {
                 return random_vector.normalize();
             }
         }

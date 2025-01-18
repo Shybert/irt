@@ -1,18 +1,20 @@
-use crate::{Hit, Hittable, Interval, Point, Ray};
+use crate::{Hit, Hittable, Interval, Material, Point, Ray};
 
-pub struct Sphere {
+pub struct Sphere<'a> {
     pub center: Point,
     pub radius: f32,
+    pub material: &'a dyn Material,
 }
-impl Sphere {
-    pub fn new(center: Point, radius: f32) -> Self {
+impl<'a> Sphere<'a> {
+    pub fn new(center: Point, radius: f32, material: &'a dyn Material) -> Self {
         return Self {
             center,
             radius: radius.max(0.),
+            material,
         };
     }
 }
-impl Hittable for Sphere {
+impl Hittable for Sphere<'_> {
     fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
         let oc = self.center - ray.origin;
         let a = ray.direction.magnitude().powi(2);
@@ -35,6 +37,12 @@ impl Hittable for Sphere {
 
         let t = root;
         let point = ray.at(t);
-        return Some(Hit::new(point, (point - self.center) / self.radius, t));
+        return Some(Hit::new(
+            ray,
+            point,
+            (point - self.center) / self.radius,
+            t,
+            self.material,
+        ));
     }
 }

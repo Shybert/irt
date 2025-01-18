@@ -1,13 +1,34 @@
-use crate::{Interval, Point, Ray, Vec3};
+use crate::{Interval, Material, Point, Ray, Vec3};
 
-pub struct Hit {
+#[derive(Debug)]
+pub struct Hit<'a> {
     pub point: Point,
     pub normal: Vec3,
     pub t: f32,
+    pub front_face: bool,
+    pub material: &'a dyn Material,
 }
-impl Hit {
-    pub fn new(point: Point, normal: Vec3, t: f32) -> Self {
-        return Self { point, normal, t };
+impl<'a> Hit<'a> {
+    pub fn new(
+        ray: &Ray,
+        point: Point,
+        outward_normal: Vec3,
+        t: f32,
+        material: &'a dyn Material,
+    ) -> Self {
+        let front_face = ray.direction.dot(&outward_normal) < 0.;
+        let normal = match front_face {
+            true => outward_normal,
+            false => -outward_normal,
+        };
+
+        return Self {
+            point,
+            normal,
+            t,
+            front_face,
+            material,
+        };
     }
 }
 
