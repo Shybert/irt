@@ -1,4 +1,4 @@
-use crate::{linear_to_gamma, Color, Hittable, Interval, Point, Ray, Vec3};
+use crate::{degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Vec3};
 use std::fs::File;
 use std::io::Write;
 
@@ -6,6 +6,7 @@ pub struct Camera {
     aspect_ratio: f32,
     image_width: u32,
     image_height: u32,
+    vertical_fov: f32,
     center: Point,
     pixel00_loc: Point,
     pixel_delta_u: Vec3,
@@ -15,14 +16,21 @@ pub struct Camera {
     max_depth: u32,
 }
 impl Camera {
-    pub fn new(aspect_ratio: f32, image_width: u32, samples_per_pixel: u32) -> Self {
+    pub fn new(
+        aspect_ratio: f32,
+        vertical_fov: f32,
+        image_width: u32,
+        samples_per_pixel: u32,
+    ) -> Self {
         // Image height should be at least 1
         let mut image_height = (image_width as f32 / aspect_ratio) as u32;
         image_height = if image_height < 1 { 1 } else { image_height };
 
         // Camera
         let focal_length = 1.;
-        let viewport_height = 2.;
+        let theta = degrees_to_radians(vertical_fov);
+        let h = f32::tan(theta / 2.);
+        let viewport_height = 2. * h * focal_length;
         let viewport_width = viewport_height * ((image_width as f32) / image_height as f32);
         let camera_center = Point::new(0., 0., 0.);
 
@@ -43,6 +51,7 @@ impl Camera {
             aspect_ratio,
             image_width,
             image_height,
+            vertical_fov,
             center: camera_center,
             pixel00_loc,
             pixel_delta_u,
