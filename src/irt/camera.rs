@@ -54,14 +54,18 @@ impl Camera {
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
-        if depth <= 0 {
+        if depth == 0 {
             return Color::new(0., 0., 0.);
         }
 
         let potential_hit = world.hit(ray, &Interval::new(0.001, f32::INFINITY));
         if let Some(hit) = potential_hit {
-            let direction = hit.normal + Vec3::random_unit_vector();
-            return 0.5 * self.ray_color(&Ray::new(hit.point, direction), depth - 1, world);
+            return match hit.material.scatter(ray, &hit) {
+                Some((scattered, attenuation)) => {
+                    attenuation * self.ray_color(&scattered, depth - 1, world)
+                }
+                None => Color::new(0., 0., 0.),
+            };
         }
 
         let a = 0.5 * (ray.direction.normalize().y + 1.);

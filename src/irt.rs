@@ -21,3 +21,6 @@ pub use sphere::*;
 
 mod camera;
 pub use camera::*;
+
+mod material;
+pub use material::*;

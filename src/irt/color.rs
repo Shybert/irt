@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Color {
     pub r: f32,
     pub g: f32,
@@ -40,6 +40,13 @@ impl Mul<Color> for f32 {
 
     fn mul(self, color: Color) -> Color {
         return color * self;
+    }
+}
+impl Mul<Color> for Color {
+    type Output = Self;
+
+    fn mul(self, other: Color) -> Self::Output {
+        return Self::new(self.r * other.r, self.g * other.g, self.b * other.b);
     }
 }
 
