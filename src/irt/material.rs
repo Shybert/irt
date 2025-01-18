@@ -29,15 +29,27 @@ impl Material for Lambertian {
 #[derive(Debug)]
 pub struct Metal {
     albedo: Color,
+    fuzz: f32,
 }
 impl Metal {
-    pub fn new(albedo: Color) -> Self {
-        return Self { albedo };
+    pub fn new(albedo: Color, fuzz: f32) -> Self {
+        return Self {
+            albedo,
+            fuzz: fuzz.clamp(0., 1.),
+        };
     }
 }
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
-        let reflected = ray_in.direction.reflect(&hit.normal);
+        let mut reflected = ray_in.direction.reflect(&hit.normal);
+        reflected = reflected.normalize() + (self.fuzz * Vec3::random_unit_vector());
+
+        // Check whether the reflection has been fuzzed below the surface
+        // If it has, have the surface absorb the ray
+        if reflected.dot(&hit.normal) <= 0. {
+            return None;
+        }
+
         return Some((Ray::new(hit.point, reflected), self.albedo));
     }
 }
