@@ -1,4 +1,4 @@
-use crate::{Color, Hittable, Interval, Point, Ray, Vec3};
+use crate::{linear_to_gamma, Color, Hittable, Interval, Point, Ray, Vec3};
 use std::fs::File;
 use std::io::Write;
 
@@ -104,10 +104,14 @@ impl Camera {
                 }
                 color *= self.pixel_samples_scale;
 
+                let r = linear_to_gamma(color.r);
+                let g = linear_to_gamma(color.g);
+                let b = linear_to_gamma(color.b);
+
                 let intensity = Interval::new(0., 0.999);
-                let ir = (intensity.clamp(color.r) * 256.) as u32;
-                let ig = (intensity.clamp(color.g) * 256.) as u32;
-                let ib = (intensity.clamp(color.b) * 256.) as u32;
+                let ir = (intensity.clamp(r) * 256.) as u32;
+                let ig = (intensity.clamp(g) * 256.) as u32;
+                let ib = (intensity.clamp(b) * 256.) as u32;
 
                 writeln!(image_file, "{} {} {}\n", ir, ig, ib).unwrap();
             }
