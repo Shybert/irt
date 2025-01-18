@@ -1,5 +1,6 @@
 use crate::Point;
-use std::ops::{Add, Div, Mul, Sub};
+use rand::prelude::*;
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -20,12 +21,40 @@ impl Vec3 {
         return self / self.magnitude();
     }
 
-    pub fn dot(&self, other: &Vec3) -> f32 {
+    pub fn dot(&self, other: &Self) -> f32 {
         return self.x * other.x + self.y * other.y + self.z * other.z;
     }
 
     pub fn random() -> Self {
-        return Self::new(rand::random(), rand::random(), rand::random());
+        let mut rng = thread_rng();
+        return Self::new(rng.gen(), rng.gen(), rng.gen());
+    }
+
+    pub fn random_interval(min: f32, max: f32) -> Self {
+        let mut rng = thread_rng();
+        return Self::new(
+            rng.gen_range(min..max),
+            rng.gen_range(min..max),
+            rng.gen_range(min..max),
+        );
+    }
+
+    pub fn random_unit_vector() -> Self {
+        loop {
+            let random_vector = Self::random_interval(-1., 1.);
+            let length_squared = random_vector.magnitude().powi(2);
+            if length_squared >= 1e-120 && length_squared <= 1. {
+                return random_vector.normalize();
+            }
+        }
+    }
+
+    pub fn random_on_hemisphere(normal: &Self) -> Self {
+        let vector_on_unit_sphere = Self::random_unit_vector();
+        if vector_on_unit_sphere.dot(normal) > 0. {
+            return vector_on_unit_sphere;
+        }
+        return -vector_on_unit_sphere;
     }
 }
 impl Add for Vec3 {
@@ -40,6 +69,13 @@ impl Sub for Vec3 {
 
     fn sub(self, rhs: Self) -> Self::Output {
         return Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z);
+    }
+}
+impl Neg for Vec3 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        return Self::new(-self.x, -self.y, -self.z);
     }
 }
 impl Mul<f32> for Vec3 {

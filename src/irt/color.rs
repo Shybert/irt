@@ -1,5 +1,6 @@
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
+#[derive(Debug)]
 pub struct Color {
     pub r: f32,
     pub g: f32,

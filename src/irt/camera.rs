@@ -12,6 +12,7 @@ pub struct Camera {
     pixel_delta_v: Vec3,
     samples_per_pixel: u32,
     pixel_samples_scale: f32,
+    max_depth: u32,
 }
 impl Camera {
     pub fn new(aspect_ratio: f32, image_width: u32, samples_per_pixel: u32) -> Self {
@@ -48,13 +49,19 @@ impl Camera {
             pixel_delta_v,
             samples_per_pixel,
             pixel_samples_scale,
+            max_depth: 10,
         };
     }
 
-    fn ray_color(&self, ray: &Ray, world: &impl Hittable) -> Color {
-        let potential_hit = world.hit(ray, &Interval::new(0., f32::INFINITY));
+    fn ray_color(&self, ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
+        if depth <= 0 {
+            return Color::new(0., 0., 0.);
+        }
+
+        let potential_hit = world.hit(ray, &Interval::new(0.001, f32::INFINITY));
         if let Some(hit) = potential_hit {
-            return 0.5 * Color::new(hit.normal.x + 1., hit.normal.y + 1., hit.normal.z + 1.);
+            let direction = hit.normal + Vec3::random_unit_vector();
+            return 0.5 * self.ray_color(&Ray::new(hit.point, direction), depth - 1, world);
         }
 
         let a = 0.5 * (ray.direction.normalize().y + 1.);
@@ -93,7 +100,7 @@ impl Camera {
                 let mut color = Color::new(0., 0., 0.);
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
-                    color += self.ray_color(&ray, world)
+                    color += self.ray_color(&ray, self.max_depth, world);
                 }
                 color *= self.pixel_samples_scale;
 
