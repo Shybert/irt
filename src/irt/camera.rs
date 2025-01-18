@@ -62,23 +62,27 @@ impl Camera {
         };
     }
 
+    fn background(&self, ray: &Ray) -> Color {
+        let a = 0.5 * (ray.direction.normalize().y + 1.);
+        return (1. - a) * Color::new(1., 1., 1.) + a * Color::new(0.5, 0.7, 1.0);
+    }
+
     fn ray_color(&self, ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
         if depth == 0 {
             return Color::new(0., 0., 0.);
         }
 
         let potential_hit = world.hit(ray, &Interval::new(0.001, f32::INFINITY));
-        if let Some(hit) = potential_hit {
-            return match hit.material.scatter(ray, &hit) {
-                Some((scattered, attenuation)) => {
-                    attenuation * self.ray_color(&scattered, depth - 1, world)
-                }
-                None => Color::new(0., 0., 0.),
-            };
-        }
+        let Some(hit) = potential_hit else {
+            return self.background(ray);
+        };
 
-        let a = 0.5 * (ray.direction.normalize().y + 1.);
-        return (1. - a) * Color::new(1., 1., 1.) + a * Color::new(0.5, 0.7, 1.0);
+        return match hit.material.scatter(ray, &hit) {
+            Some((scattered, attenuation)) => {
+                attenuation * self.ray_color(&scattered, depth - 1, world)
+            }
+            None => Color::new(0., 0., 0.),
+        };
     }
 
     /// Returns the `x` and `y` coordinates of a random point
