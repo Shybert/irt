@@ -42,3 +42,10 @@ impl Mul<Color> for f32 {
         return color * self;
     }
 }
+
+pub fn linear_to_gamma(linear_component: f32) -> f32 {
+    if linear_component > 0. {
+        return linear_component.sqrt();
+    }
+    return 0.;
+}
