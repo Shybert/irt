@@ -33,6 +33,6 @@ fn main() {
         Sphere::new(Point::new(1., 0., -1.), 0.5, &material_right),
     ];
 
-    let camera = Camera::new(16. / 9., 400, 100);
+    let camera = Camera::new(16. / 9., 90., 400, 100);
     camera.render(&world.as_slice());
 }
