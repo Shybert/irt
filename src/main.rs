@@ -20,11 +20,12 @@ impl Triangle {
 
 fn main() {
     println!("Hello, world!");
+    let start_time = Instant::now();
 
     let material_ground = Lambertian::new(Color::new(0.8, 0.8, 0.));
     let material_center = Lambertian::new(Color::new(0.1, 0.2, 0.5));
-    let material_left = Metal::new(Color::new(0.8, 0.8, 0.8));
-    let material_right = Metal::new(Color::new(0.8, 0.6, 0.2));
+    let material_left = Metal::new(Color::new(0.8, 0.8, 0.8), 0.3);
+    let material_right = Metal::new(Color::new(0.8, 0.6, 0.2), 0.7);
 
     let world = vec![
         Sphere::new(Point::new(0., -100.5, -1.), 100., &material_ground),
