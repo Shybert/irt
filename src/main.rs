@@ -36,7 +36,12 @@ fn main() {
         Sphere::new(Point::new(1., 0., -1.), 0.5, &material_right),
     ];
 
-    let camera = Camera::new(16. / 9., 90., 400, 100);
+    let look_from = Point::new(0., 0., 0.);
+    // let look_from = Point::new(-2., 2., 1.);
+    let look_at = Point::new(0., 0., -1.);
+    let up = Vec3::new(0., 1., 0.);
+
+    let camera = Camera::new(16. / 9., 90., 400, look_from, look_at, up, 100);
     camera.render(&world.as_slice());
 
     println!("Wall time: {:.1} s", start_time.elapsed().as_secs_f64());

@@ -30,6 +30,14 @@ impl Vec3 {
         return self.x * other.x + self.y * other.y + self.z * other.z;
     }
 
+    pub fn cross(&self, other: &Self) -> Self {
+        return Self::new(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+        );
+    }
+
     pub fn reflect(&self, other: &Self) -> Self {
         return *self - 2. * self.dot(other) * *other;
     }
