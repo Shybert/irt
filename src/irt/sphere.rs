@@ -17,9 +17,9 @@ impl<'a> Sphere<'a> {
 impl Hittable for Sphere<'_> {
     fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
         let oc = self.center - ray.origin;
-        let a = ray.direction.magnitude().powi(2);
+        let a = ray.direction.length_squared();
         let h = ray.direction.dot(&oc);
-        let c = oc.magnitude().powi(2) - self.radius.powi(2);
+        let c = oc.length_squared() - self.radius.powi(2);
 
         let discriminant = h.powi(2) - a * c;
         if discriminant < 0. {

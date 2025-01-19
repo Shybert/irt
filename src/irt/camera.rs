@@ -45,7 +45,7 @@ impl Camera {
         let mut image_height = (image_width as f32 / aspect_ratio) as u32;
         image_height = if image_height < 1 { 1 } else { image_height };
 
-        let focal_length = (look_from - look_at).magnitude();
+        let focal_length = (look_from - look_at).length();
         let basis = CameraBasis::new(look_from, look_at, up);
         let center = look_from;
 

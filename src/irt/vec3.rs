@@ -13,12 +13,16 @@ impl Vec3 {
         return Vec3 { x, y, z };
     }
 
-    pub fn magnitude(&self) -> f32 {
-        return (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt();
+    pub fn length_squared(&self) -> f32 {
+        return self.x.powi(2) + self.y.powi(2) + self.z.powi(2);
+    }
+
+    pub fn length(&self) -> f32 {
+        return self.length_squared().sqrt();
     }
 
     pub fn normalize(&self) -> Self {
-        return *self / self.magnitude();
+        return *self / self.length();
     }
 
     pub fn near_zero(&self) -> bool {
@@ -59,7 +63,7 @@ impl Vec3 {
     pub fn random_unit_vector() -> Self {
         loop {
             let random_vector = Self::random_interval(-1., 1.);
-            let length_squared = random_vector.magnitude().powi(2);
+            let length_squared = random_vector.length_squared();
             if (1e-120..=1.).contains(&length_squared) {
                 return random_vector.normalize();
             }
