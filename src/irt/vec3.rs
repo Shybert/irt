@@ -46,6 +46,15 @@ impl Vec3 {
         return *self - 2. * self.dot(other) * *other;
     }
 
+    pub fn refract(&self, normal: &Self, refractive_index_ratio: f32) -> Self {
+        let cos_theta = self.dot(normal);
+        let a = refractive_index_ratio * *self;
+        let b = refractive_index_ratio * cos_theta;
+        let c = (1. - refractive_index_ratio.powi(2) * (1. - (cos_theta).powi(2))).sqrt();
+
+        return a - (b + c) * *normal;
+    }
+
     pub fn random() -> Self {
         let mut rng = thread_rng();
         return Self::new(rng.gen(), rng.gen(), rng.gen());

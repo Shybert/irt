@@ -53,3 +53,28 @@ impl Material for Metal {
         return Some((Ray::new(hit.point, reflected), self.albedo));
     }
 }
+
+#[derive(Debug)]
+pub struct Dielectric {
+    refraction_index: f32,
+}
+impl Dielectric {
+    pub fn new(refraction_index: f32) -> Self {
+        return Self { refraction_index };
+    }
+}
+impl Material for Dielectric {
+    fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
+        let refractive_index_ratio = match hit.front_face {
+            true => 1. / self.refraction_index,
+            false => self.refraction_index,
+        };
+
+        let refracted = ray_in
+            .direction
+            .normalize()
+            .refract(&hit.normal, refractive_index_ratio);
+
+        return Some((Ray::new(hit.point, refracted), Color::new(1., 1., 1.)));
+    }
+}
