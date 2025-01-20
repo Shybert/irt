@@ -70,11 +70,16 @@ impl Material for Dielectric {
             false => self.refraction_index,
         };
 
-        let refracted = ray_in
-            .direction
-            .normalize()
-            .refract(&hit.normal, refractive_index_ratio);
+        let unit_in_direction = ray_in.direction.normalize();
+        let cos_theta = unit_in_direction.dot(&hit.normal);
+        let sin_theta = (1. - cos_theta.powi(2)).sqrt();
 
-        return Some((Ray::new(hit.point, refracted), Color::new(1., 1., 1.)));
+        let cannot_refract = refractive_index_ratio * sin_theta > 1.;
+        let out_direction = match cannot_refract {
+            true => unit_in_direction.reflect(&hit.normal),
+            false => unit_in_direction.refract(&hit.normal, refractive_index_ratio),
+        };
+
+        return Some((Ray::new(hit.point, out_direction), Color::new(1., 1., 1.)));
     }
 }
