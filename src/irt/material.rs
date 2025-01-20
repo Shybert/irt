@@ -1,3 +1,5 @@
+use rand::random;
+
 use crate::{Color, Hit, Ray, Vec3};
 use std::fmt::Debug;
 
@@ -56,11 +58,19 @@ impl Material for Metal {
 
 #[derive(Debug)]
 pub struct Dielectric {
+    /// The refractive index of the material in a vacuum.
+    /// ALternatively, the refractive index in the material's enclosing media.
     refraction_index: f32,
 }
 impl Dielectric {
     pub fn new(refraction_index: f32) -> Self {
         return Self { refraction_index };
+    }
+
+    /// Compute reflectance with Schlick's approximation
+    fn reflectance(&self, cos_theta: f32) -> f32 {
+        let r_0 = ((1. - self.refraction_index) / (1. + self.refraction_index)).powi(2);
+        return r_0 + (1. - r_0) * (1. - cos_theta).powi(5);
     }
 }
 impl Material for Dielectric {
@@ -75,7 +85,8 @@ impl Material for Dielectric {
         let sin_theta = (1. - cos_theta.powi(2)).sqrt();
 
         let cannot_refract = refractive_index_ratio * sin_theta > 1.;
-        let out_direction = match cannot_refract {
+        // Should the reflectance check actually use `>`?
+        let out_direction = match cannot_refract || self.reflectance(cos_theta) < random() {
             true => unit_in_direction.reflect(&hit.normal),
             false => unit_in_direction.refract(&hit.normal, refractive_index_ratio),
         };
