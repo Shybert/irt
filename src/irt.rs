@@ -28,5 +28,8 @@ pub use material::*;
 mod utils;
 pub use utils::*;
 
+mod aabb;
+pub use aabb::*;
+
 mod axis;
 pub use axis::*;
