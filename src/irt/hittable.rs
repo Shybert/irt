@@ -1,4 +1,4 @@
-use crate::{Interval, Material, Point, Ray, Vec3};
+use crate::{Aabb, Interval, Material, Point, Ray, Vec3};
 
 #[derive(Debug)]
 pub struct Hit<'a> {
@@ -34,12 +34,33 @@ impl<'a> Hit<'a> {
 
 pub trait Hittable {
     fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit>;
+
+    fn aabb(&self) -> &Aabb;
 }
-impl<T: Hittable> Hittable for &[T] {
+
+pub struct HittableList<T: Hittable> {
+    objects: Vec<T>,
+    aabb: Aabb,
+}
+impl<T: Hittable> HittableList<T> {
+    pub fn new(objects: Vec<T>) -> Self {
+        let aabb = objects
+            .iter()
+            .fold(Aabb::empty(), |aabb, object| aabb.expand(object.aabb()));
+
+        return Self { objects, aabb };
+    }
+}
+impl<T: Hittable> Hittable for HittableList<T> {
     fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
         return self
+            .objects
             .iter()
             .filter_map(|object| object.hit(ray, t_interval))
             .min_by(|x, y| x.t.total_cmp(&y.t));
+    }
+
+    fn aabb(&self) -> &Aabb {
+        return &self.aabb;
     }
 }
