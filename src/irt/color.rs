@@ -1,5 +1,9 @@
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
+use rand::prelude::*;
+
+use crate::Interval;
+
 #[derive(Debug, Copy, Clone)]
 pub struct Color {
     pub r: f32,
@@ -9,6 +13,20 @@ pub struct Color {
 impl Color {
     pub fn new(r: f32, g: f32, b: f32) -> Self {
         return Self { r, g, b };
+    }
+
+    pub fn random() -> Self {
+        let mut rng = thread_rng();
+        return Self::new(rng.gen(), rng.gen(), rng.gen());
+    }
+
+    pub fn random_in_interval(interval: &Interval) -> Self {
+        let mut rng = thread_rng();
+        return Self::new(
+            rng.gen_range(interval.min..interval.max),
+            rng.gen_range(interval.min..interval.max),
+            rng.gen_range(interval.min..interval.max),
+        );
     }
 }
 impl Add for Color {
