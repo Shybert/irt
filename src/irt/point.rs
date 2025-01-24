@@ -1,5 +1,5 @@
-use crate::Vec3;
-use std::ops::{Add, Mul, Sub};
+use crate::{Axis, Vec3};
+use std::ops::{Add, Index, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -56,5 +56,16 @@ impl Mul<Point> for f32 {
 
     fn mul(self, vec3: Point) -> Self::Output {
         return vec3 * self;
+    }
+}
+impl Index<&Axis> for Point {
+    type Output = f32;
+
+    fn index(&self, axis: &Axis) -> &Self::Output {
+        match axis {
+            Axis::X => &self.x,
+            Axis::Y => &self.y,
+            Axis::Z => &self.z,
+        }
     }
 }
