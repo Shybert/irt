@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use super::{Aabb, Hit, Hittable, Interval, Ray, Sphere};
+use crate::{Aabb, Hit, Hittable, Interval, Ray, Sphere};
 
 #[derive(Debug)]
 enum NodeOrSpheres {
@@ -21,8 +21,9 @@ impl Node {
             .iter()
             .for_each(|sphere| aabb = aabb.expand(sphere.aabb()));
 
-        let longest_axis = aabb.longest_axis();
-        let split_position = aabb[&longest_axis].min + aabb[&longest_axis].size() * 0.5;
+        let extent = aabb.extent();
+        let longest_axis = extent.longest_axis();
+        let split_position = aabb.min[&longest_axis] + extent[&longest_axis] * 0.5;
 
         let (left_spheres, right_spheres): (Vec<Sphere>, Vec<Sphere>) = spheres
             .into_iter()
@@ -51,8 +52,8 @@ impl Hittable for Node {
         return &self.aabb;
     }
 
-    fn hit(&self, ray: &super::Ray, t_interval: &super::Interval) -> Option<Hit> {
-        if !self.aabb().hit(ray, t_interval) {
+    fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
+        if !self.aabb().hit(ray) {
             return None;
         }
 
