@@ -1,6 +1,6 @@
-use crate::Point;
+use crate::{Axis, Point};
 use rand::prelude::*;
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -132,5 +132,16 @@ impl Div<f32> for Vec3 {
 impl From<Point> for Vec3 {
     fn from(point: Point) -> Self {
         Self::new(point.x, point.y, point.z)
+    }
+}
+impl Index<&Axis> for Vec3 {
+    type Output = f32;
+
+    fn index(&self, axis: &Axis) -> &Self::Output {
+        match axis {
+            Axis::X => &self.x,
+            Axis::Y => &self.y,
+            Axis::Z => &self.z,
+        }
     }
 }
