@@ -81,12 +81,11 @@ impl Material for Dielectric {
         };
 
         let unit_in_direction = ray_in.direction.normalize();
-        let cos_theta = unit_in_direction.dot(&hit.normal);
+        let cos_theta = -unit_in_direction.dot(&hit.normal);
         let sin_theta = (1. - cos_theta.powi(2)).sqrt();
 
         let cannot_refract = refractive_index_ratio * sin_theta > 1.;
-        // Should the reflectance check actually use `>`?
-        let out_direction = match cannot_refract || self.reflectance(cos_theta) < random() {
+        let out_direction = match cannot_refract || self.reflectance(cos_theta) > random() {
             true => unit_in_direction.reflect(&hit.normal),
             false => unit_in_direction.refract(&hit.normal, refractive_index_ratio),
         };
