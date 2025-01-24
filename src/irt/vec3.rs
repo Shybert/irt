@@ -30,6 +30,50 @@ impl Vec3 {
         return self.x.abs() < threshold && self.y.abs() < threshold && self.z.abs() < threshold;
     }
 
+    /// Returns a vector where each element is the smallest of the corresponding elements from each
+    /// input.
+    pub fn min(&self, other: &Self) -> Self {
+        return Self::new(
+            self.x.min(other.x),
+            self.y.min(other.y),
+            self.z.min(other.z),
+        );
+    }
+
+    /// Returns the smallest of the vector's components.
+    pub fn min_component(&self) -> f32 {
+        return self.x.min(self.y.min(self.z));
+    }
+
+    /// Returns the largest of the vector's components.
+    pub fn max_component(&self) -> f32 {
+        return self.x.max(self.y.max(self.z));
+    }
+
+    /// Returns a vector where each element is the largest of the corresponding elements from each
+    /// input.
+    pub fn max(&self, other: &Self) -> Self {
+        return Self::new(
+            self.x.max(other.x),
+            self.y.max(other.y),
+            self.z.max(other.z),
+        );
+    }
+
+    pub fn longest_axis(&self) -> Axis {
+        if self.x > self.y {
+            if self.x > self.z {
+                return Axis::X;
+            } else {
+                return Axis::Z;
+            };
+        } else if self.y > self.z {
+            return Axis::Y;
+        } else {
+            return Axis::Z;
+        };
+    }
+
     pub fn dot(&self, other: &Self) -> f32 {
         return self.x * other.x + self.y * other.y + self.z * other.z;
     }
@@ -122,11 +166,25 @@ impl Mul<Vec3> for f32 {
         return vec3 * self;
     }
 }
+impl Mul<Vec3> for Vec3 {
+    type Output = Self;
+
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        return Self::new(self.x * rhs.x, self.y * rhs.y, self.z * rhs.z);
+    }
+}
 impl Div<f32> for Vec3 {
     type Output = Self;
 
     fn div(self, scalar: f32) -> Self::Output {
         return self * (1. / scalar);
+    }
+}
+impl Div<Vec3> for f32 {
+    type Output = Vec3;
+
+    fn div(self, vec3: Vec3) -> Self::Output {
+        return Vec3::new(self / vec3.x, self / vec3.y, self / vec3.z);
     }
 }
 impl From<Point> for Vec3 {
