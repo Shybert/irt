@@ -1,4 +1,4 @@
-use crate::{Axis, Point};
+use crate::{Axis, Interval, Point};
 use rand::prelude::*;
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
@@ -60,18 +60,18 @@ impl Vec3 {
         return Self::new(rng.gen(), rng.gen(), rng.gen());
     }
 
-    pub fn random_interval(min: f32, max: f32) -> Self {
+    pub fn random_in_interval(interval: &Interval) -> Self {
         let mut rng = thread_rng();
         return Self::new(
-            rng.gen_range(min..max),
-            rng.gen_range(min..max),
-            rng.gen_range(min..max),
+            rng.gen_range(interval.min..interval.max),
+            rng.gen_range(interval.min..interval.max),
+            rng.gen_range(interval.min..interval.max),
         );
     }
 
     pub fn random_unit_vector() -> Self {
         loop {
-            let random_vector = Self::random_interval(-1., 1.);
+            let random_vector = Self::random_in_interval(&Interval::new(-1., 1.));
             let length_squared = random_vector.length_squared();
             if (1e-120..=1.).contains(&length_squared) {
                 return random_vector.normalize();
