@@ -1,20 +1,29 @@
-use crate::{Hit, Hittable, Interval, Material, Point, Ray};
+use std::rc::Rc;
 
-pub struct Sphere<'a> {
+use crate::{Aabb, Hit, Hittable, Interval, Material, Point, Ray, Vec3};
+
+#[derive(Debug)]
+pub struct Sphere {
     pub center: Point,
     pub radius: f32,
-    pub material: &'a dyn Material,
+    pub material: Rc<dyn Material>,
+    aabb: Aabb,
 }
-impl<'a> Sphere<'a> {
-    pub fn new(center: Point, radius: f32, material: &'a dyn Material) -> Self {
+impl Sphere {
+    pub fn new(center: Point, radius: f32, material: Rc<dyn Material>) -> Self {
+        let radius2 = radius.max(0.);
+        let radius_vector = Vec3::new(radius2, radius2, radius2);
+        let aabb = Aabb::new(center - radius_vector, center + radius_vector);
+
         return Self {
             center,
-            radius: radius.max(0.),
+            radius: radius2,
             material,
+            aabb,
         };
     }
 }
-impl Hittable for Sphere<'_> {
+impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
         let oc = self.center - ray.origin;
         let a = ray.direction.length_squared();
@@ -42,7 +51,11 @@ impl Hittable for Sphere<'_> {
             point,
             (point - self.center) / self.radius,
             t,
-            self.material,
+            self.material.as_ref(),
         ));
+    }
+
+    fn aabb(&self) -> &Aabb {
+        return &self.aabb;
     }
 }
