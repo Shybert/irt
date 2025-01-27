@@ -4,6 +4,21 @@ use strum::IntoEnumIterator;
 
 use crate::{Aabb, Axis, Hit, Hittable, Interval, Ray, Triangle};
 
+struct Split {
+    axis: Axis,
+    position: f32,
+    cost: f32,
+}
+impl Split {
+    fn new(axis: Axis, position: f32, cost: f32) -> Self {
+        return Self {
+            axis,
+            position,
+            cost,
+        };
+    }
+}
+
 #[derive(Debug)]
 enum NodeOrSpheres<'a> {
     Node(Rc<Node<'a>>),
@@ -17,7 +32,7 @@ pub struct Node<'a> {
     right: NodeOrSpheres<'a>,
 }
 impl<'a> Node<'a> {
-    pub fn sah(triangles: &[Triangle], axis: &Axis, position: f32) -> f32 {
+    fn sah(triangles: &[Triangle], axis: &Axis, position: f32) -> f32 {
         let mut left_box = Aabb::empty();
         let mut left_count = 0.;
         let mut right_box = Aabb::empty();
@@ -41,44 +56,45 @@ impl<'a> Node<'a> {
         return if cost > 0. { cost } else { f32::INFINITY };
     }
 
-    pub fn new(spheres: Vec<Triangle<'a>>) -> Node<'a> {
-        let mut aabb = Aabb::empty();
-        spheres
-            .iter()
-            .for_each(|sphere| aabb = aabb.expand(sphere.aabb()));
-        let current_cost = aabb.area() * spheres.len() as f32;
+    fn best_split(triangles: &[Triangle]) -> Split {
+        let mut best_split = Split::new(Axis::X, 0., f32::INFINITY);
 
-        let mut best_axis = Axis::X;
-        let mut best_cost = f32::INFINITY;
-        let mut best_position = 0.;
         for axis in Axis::iter() {
-            for triangle in &spheres {
+            for triangle in triangles {
                 let candidate_position = triangle.centroid[&axis];
-                let cost = Node::sah(&spheres, &axis, candidate_position);
-                if cost < best_cost {
-                    best_axis = axis;
-                    best_cost = cost;
-                    best_position = candidate_position;
+                let cost = Node::sah(triangles, &axis, candidate_position);
+                if cost < best_split.cost {
+                    best_split = Split::new(axis, candidate_position, cost);
                 }
             }
         }
 
-        let (left_spheres, right_spheres): (Vec<Triangle>, Vec<Triangle>) = spheres
-            .into_iter()
-            .partition(|triangle| triangle.centroid[&best_axis] < best_position);
+        return best_split;
+    }
 
-        if best_cost >= current_cost {
+    pub fn new(triangles: Vec<Triangle<'a>>) -> Node<'a> {
+        let aabb = triangles
+            .iter()
+            .fold(Aabb::empty(), |aabb, triangle| aabb.expand(triangle.aabb()));
+        let current_cost = aabb.area() * triangles.len() as f32;
+        let best_split = Node::best_split(&triangles);
+
+        let (left_triangles, right_triangles): (Vec<Triangle>, Vec<Triangle>) = triangles
+            .into_iter()
+            .partition(|triangle| triangle.centroid[&best_split.axis] < best_split.position);
+
+        if best_split.cost >= current_cost {
             return Self {
                 aabb,
-                left: NodeOrSpheres::Spheres(left_spheres),
-                right: NodeOrSpheres::Spheres(right_spheres),
+                left: NodeOrSpheres::Spheres(left_triangles),
+                right: NodeOrSpheres::Spheres(right_triangles),
             };
         }
 
         return Self {
             aabb,
-            left: NodeOrSpheres::Node(Rc::new(Self::new(left_spheres))),
-            right: NodeOrSpheres::Node(Rc::new(Self::new(right_spheres))),
+            left: NodeOrSpheres::Node(Rc::new(Self::new(left_triangles))),
+            right: NodeOrSpheres::Node(Rc::new(Self::new(right_triangles))),
         };
     }
 }
