@@ -2,24 +2,12 @@ mod irt;
 use irt::*;
 use rand::prelude::*;
 
-use std::{rc::Rc, time::Instant};
-
-struct Triangle {
-    v0: Point,
-    v1: Point,
-    v2: Point,
-    centroid: Point,
-}
-impl Triangle {
-    pub fn new(v0: Point, v1: Point, v2: Point, centroid: Point) -> Self {
-        return Triangle {
-            v0,
-            v1,
-            v2,
-            centroid,
-        };
-    }
-}
+use std::{
+    fs::File,
+    io::{BufRead, BufReader},
+    rc::Rc,
+    time::Instant,
+};
 
 fn scene_with_a_lot() {
     let material_ground = Lambertian::new(Color::new(0.5, 0.5, 0.5));
@@ -77,11 +65,16 @@ fn scene_with_a_lot() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(16. / 9., 20., 400, look_from, look_at, up, 100);
 
-    println!("Building BVH");
-    let bvh = Node::new(world);
-
-    println!("Rendering scene");
-    camera.render(&bvh);
+    // println!("Building BVH");
+    // let start_time = Instant::now();
+    // let bvh = Node::new(world);
+    // println!(
+    //     "Wall time to build BVH: {:.1} s",
+    //     start_time.elapsed().as_secs_f64()
+    // );
+    //
+    // println!("Rendering scene");
+    // camera.render(&bvh);
 }
 
 fn basic_scene() {
@@ -106,21 +99,60 @@ fn basic_scene() {
 
     let camera = Camera::new(16. / 9., 30., 400, look_from, look_at, up, 100);
 
-    let bvh = Node::new(world);
-    println!("bvh, {:?}", bvh);
-    camera.render(&bvh);
+    // let bvh = Node::new(world);
+    // camera.render(&bvh);
+}
+
+fn parse_triangle<'a>(line: &str, material: &'a dyn Material) -> Triangle<'a> {
+    let values: Vec<f32> = line
+        .split_whitespace()
+        .filter_map(|s| s.parse().ok())
+        .collect();
+
+    return Triangle::new(
+        Point::new(values[0], values[1], values[2]),
+        Point::new(values[3], values[4], values[5]),
+        Point::new(values[6], values[7], values[8]),
+        material,
+    );
+}
+
+fn read_file<'a>(file_name: &str, material: &'a dyn Material) -> Vec<Triangle<'a>> {
+    let file = BufReader::new(File::open(file_name).unwrap());
+
+    return file
+        .lines()
+        .map(|line| parse_triangle(&line.unwrap(), material))
+        .collect();
 }
 
 fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 2;
-    match scene {
-        1 => basic_scene(),
-        2 => scene_with_a_lot(),
-        _ => basic_scene(),
-    }
+    let material = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.)));
+    let triangles = read_file("assets/unity.tri", material.as_ref());
+
+    println!("Building BVH");
+    let bvh_start_time = Instant::now();
+    let bvh = Node::new(triangles);
+    println!(
+        "Wall time to build BVH: {:.1} s",
+        bvh_start_time.elapsed().as_secs_f64()
+    );
+
+    let look_from = Point::new(-0., 0., -5.);
+    let look_at = Point::new(0., 0., -1.);
+    let up = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(16. / 9., 30., 400, look_from, look_at, up, 100);
+    camera.render(&bvh);
+
+    // let scene = 2;
+    // match scene {
+    //     1 => basic_scene(),
+    //     2 => scene_with_a_lot(),
+    //     _ => basic_scene(),
+    // }
 
     println!("Wall time: {:.1} s", start_time.elapsed().as_secs_f64());
 }
