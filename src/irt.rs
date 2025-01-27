@@ -36,3 +36,6 @@ pub use axis::*;
 
 mod bvh;
 pub use bvh::*;
+
+mod triangle;
+pub use triangle::*;
