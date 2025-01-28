@@ -12,3 +12,6 @@ strum = { version = "0.26", features = ["derive"] }
 [lints.clippy]
 needless_return = "allow"
 only_used_in_recursion = "allow"
+
+[profile.release]
+debug = true
