@@ -98,7 +98,11 @@ impl<'a> Node<'a> {
         };
     }
 }
-fn hit_a_sphere<'a>(spheres: &'a [Triangle], ray: &Ray, t_interval: &Interval) -> Option<Hit<'a>> {
+fn hit_a_sphere<'a>(
+    spheres: &'a [Triangle],
+    ray: &Ray,
+    t_interval: &mut Interval,
+) -> Option<Hit<'a>> {
     return spheres
         .iter()
         .filter_map(|object| object.hit(ray, t_interval))
@@ -109,8 +113,8 @@ impl Hittable for Node<'_> {
         return &self.aabb;
     }
 
-    fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
-        if !self.aabb().hit(ray) {
+    fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
+        if !self.aabb().hit(ray, t_interval) {
             return None;
         }
 

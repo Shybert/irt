@@ -1,4 +1,4 @@
-use crate::{Point, Ray, Vec3};
+use crate::{Interval, Point, Ray, Vec3};
 
 /// Struct for an axis-aligned bounding box
 #[derive(Debug)]
@@ -33,15 +33,15 @@ impl Aabb {
         self.max = self.max.max(point);
     }
 
-    pub fn hit(&self, ray: &Ray) -> bool {
+    pub fn hit(&self, ray: &Ray, t_interval: &Interval) -> bool {
         let inverse_ray_direction = 1. / ray.direction;
         let t_0 = (self.min - ray.origin) * inverse_ray_direction;
         let t_1 = (self.max - ray.origin) * inverse_ray_direction;
 
-        let t_min = t_0.min(&t_1);
-        let t_max = t_0.max(&t_1);
+        let t_min = t_0.min(&t_1).max_component();
+        let t_max = t_0.max(&t_1).min_component();
 
-        return t_min.max_component() <= t_max.min_component();
+        return t_interval.min.max(t_min) <= t_interval.max.min(t_max);
     }
 
     pub fn area(&self) -> f32 {

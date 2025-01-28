@@ -93,7 +93,7 @@ impl Camera {
             return Color::new(0., 0., 0.);
         }
 
-        let potential_hit = world.hit(ray, &Interval::new(0.001, f32::INFINITY));
+        let potential_hit = world.hit(ray, &mut Interval::new(0.001, f32::INFINITY));
         let Some(hit) = potential_hit else {
             return self.background(ray);
         };
