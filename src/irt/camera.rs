@@ -1,3 +1,5 @@
+use indicatif::ProgressBar;
+
 use crate::{degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Vec3};
 use std::fs::File;
 use std::io::Write;
@@ -132,8 +134,8 @@ impl Camera {
         )
         .unwrap();
 
+        let progress_bar = ProgressBar::new(self.image_height.into());
         for j in 0..self.image_height {
-            println!("Lines remaining: {}", self.image_height - j);
             for i in 0..self.image_width {
                 let mut color = Color::new(0., 0., 0.);
                 for _ in 0..self.samples_per_pixel {
@@ -153,6 +155,7 @@ impl Camera {
 
                 writeln!(image_file, "{} {} {}\n", ir, ig, ib).unwrap();
             }
+            progress_bar.inc(1);
         }
 
         println!("Print finished.");
