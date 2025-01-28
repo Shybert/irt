@@ -24,7 +24,7 @@ impl Sphere {
     }
 }
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
+    fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
         let oc = self.center - ray.origin;
         let a = ray.direction.length_squared();
         let h = ray.direction.dot(&oc);
@@ -45,6 +45,7 @@ impl Hittable for Sphere {
         }
 
         let t = root;
+        t_interval.max = t;
         let point = ray.at(t);
         return Some(Hit::new(
             ray,

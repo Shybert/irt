@@ -33,7 +33,7 @@ impl<'a> Hit<'a> {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit>;
+    fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit>;
 
     fn aabb(&self) -> &Aabb;
 }
@@ -52,7 +52,7 @@ impl<T: Hittable> HittableList<T> {
     }
 }
 impl<T: Hittable> Hittable for HittableList<T> {
-    fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
+    fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
         return self
             .objects
             .iter()

@@ -29,7 +29,7 @@ impl Hittable for Triangle<'_> {
         return &self.aabb;
     }
 
-    fn hit(&self, ray: &Ray, t_interval: &Interval) -> Option<Hit> {
+    fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
         let edge_1 = self.b - self.a;
         let edge_2 = self.c - self.a;
 
@@ -55,10 +55,11 @@ impl Hittable for Triangle<'_> {
         }
 
         let t = inverse_det * edge_2.dot(&s_cross_edge_1);
-        if t < 0.0001 {
+        if !t_interval.surrounds(t) {
             return None;
         }
 
+        t_interval.max = t;
         return Some(Hit::new(
             ray,
             ray.origin + ray.direction * t,
