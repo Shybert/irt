@@ -1,4 +1,6 @@
-use std::rc::Rc;
+use std::ops::Range;
+
+use itertools::partition;
 
 use strum::IntoEnumIterator;
 
@@ -19,19 +21,11 @@ impl Split {
     }
 }
 
-#[derive(Debug)]
-enum NodeOrSpheres<'a> {
-    Node(Rc<Node<'a>>),
-    Spheres(Vec<Triangle<'a>>),
+pub struct Bvh<'a> {
+    triangles: Vec<Triangle<'a>>,
+    nodes: Vec<BvhNode>,
 }
-
-#[derive(Debug)]
-pub struct Node<'a> {
-    aabb: Aabb,
-    left: NodeOrSpheres<'a>,
-    right: NodeOrSpheres<'a>,
-}
-impl<'a> Node<'a> {
+impl<'a> Bvh<'a> {
     fn sah(triangles: &[Triangle], axis: &Axis, position: f32) -> f32 {
         let mut left_box = Aabb::empty();
         let mut left_count = 0.;
@@ -60,10 +54,21 @@ impl<'a> Node<'a> {
         let mut best_split = Split::new(Axis::X, 0., f32::INFINITY);
 
         for axis in Axis::iter() {
+            let mut bound = Interval::empty();
             for triangle in triangles {
-                let candidate_position = triangle.centroid[&axis];
-                let cost = Node::sah(triangles, &axis, candidate_position);
-                if cost < best_split.cost {
+                bound.min = bound.min.min(triangle.centroid[&axis]);
+                bound.max = bound.max.max(triangle.centroid[&axis]);
+            }
+            if bound.min == bound.max {
+                continue;
+            }
+
+            let num_intervals = 4;
+            let scale = bound.size() / num_intervals as f32;
+            for i in 1..num_intervals {
+                let candidate_position = bound.min + i as f32 * scale;
+                let cost = Self::sah(triangles, &axis, candidate_position);
+                if cost <= best_split.cost {
                     best_split = Split::new(axis, candidate_position, cost);
                 }
             }
@@ -72,76 +77,110 @@ impl<'a> Node<'a> {
         return best_split;
     }
 
-    pub fn new(triangles: Vec<Triangle<'a>>) -> Node<'a> {
-        let aabb = triangles
-            .iter()
-            .fold(Aabb::empty(), |aabb, triangle| aabb.expand(triangle.aabb()));
-        let current_cost = aabb.area() * triangles.len() as f32;
-        let best_split = Node::best_split(&triangles);
+    fn subdivide(&mut self, node_index: usize) {
+        let node = &self.nodes[node_index];
 
-        let (left_triangles, right_triangles): (Vec<Triangle>, Vec<Triangle>) = triangles
-            .into_iter()
-            .partition(|triangle| triangle.centroid[&best_split.axis] < best_split.position);
-
-        if best_split.cost >= current_cost {
-            return Self {
-                aabb,
-                left: NodeOrSpheres::Spheres(left_triangles),
-                right: NodeOrSpheres::Spheres(right_triangles),
-            };
+        let best_split = Self::best_split(&self.triangles[node.triangle_range()]);
+        let parent_cost = node.aabb.area() * node.triangle_count as f32;
+        if best_split.cost >= parent_cost {
+            return;
         }
 
-        return Self {
-            aabb,
-            left: NodeOrSpheres::Node(Rc::new(Self::new(left_triangles))),
-            right: NodeOrSpheres::Node(Rc::new(Self::new(right_triangles))),
-        };
+        let split_index = partition(&mut self.triangles[node.triangle_range()], |triangle| {
+            triangle.centroid[&best_split.axis] <= best_split.position
+        });
+        if split_index == 0 || split_index == node.triangle_count {
+            return;
+        }
+
+        let left_node = BvhNode::new(self, node.left_first, split_index);
+        let right_node = BvhNode::new(
+            self,
+            node.left_first + split_index,
+            node.triangle_count - split_index,
+        );
+
+        let left_index = self.nodes.len();
+        self.nodes.push(left_node);
+        self.nodes.push(right_node);
+        self.subdivide(left_index);
+        self.subdivide(left_index + 1);
+
+        self.nodes[node_index].left_first = left_index;
+        self.nodes[node_index].triangle_count = 0;
+
+        return;
+    }
+
+    pub fn new(triangles: Vec<Triangle<'a>>) -> Self {
+        let nodes = Vec::with_capacity(triangles.len() * 2 - 1);
+
+        let mut bvh = Self { triangles, nodes };
+        let root_node = BvhNode::new(&bvh, 0, bvh.triangles.len());
+
+        bvh.nodes.push(root_node);
+        bvh.subdivide(0);
+        bvh.nodes.shrink_to_fit();
+
+        return bvh;
+    }
+
+    fn intersect(&self, ray: &Ray, t_interval: &mut Interval, node_index: usize) -> Option<Hit> {
+        let node = &self.nodes[node_index];
+        if !node.aabb.hit(ray, t_interval) {
+            return None;
+        }
+
+        if node.triangle_count != 0 {
+            return self.triangles[node.triangle_range()].hit(ray, t_interval);
+        } else {
+            let hit_left = self.intersect(ray, t_interval, node.left_first);
+            let hit_right = self.intersect(ray, t_interval, node.left_first + 1);
+
+            if hit_left.is_none() && hit_right.is_none() {
+                return None;
+            } else if hit_left.is_some() && hit_right.is_none() {
+                return hit_left;
+            } else if hit_left.is_none() && hit_right.is_some() {
+                return hit_right;
+            } else {
+                let left_t = hit_left.as_ref().unwrap().t;
+                let right_t = hit_right.as_ref().unwrap().t;
+                if left_t <= right_t {
+                    return hit_left;
+                } else {
+                    return hit_right;
+                }
+            }
+        }
     }
 }
-fn hit_a_sphere<'a>(
-    spheres: &'a [Triangle],
-    ray: &Ray,
-    t_interval: &mut Interval,
-) -> Option<Hit<'a>> {
-    return spheres
-        .iter()
-        .filter_map(|object| object.hit(ray, t_interval))
-        .min_by(|x, y| x.t.total_cmp(&y.t));
+#[derive(Debug)]
+struct BvhNode {
+    aabb: Aabb,
+    left_first: usize,
+    triangle_count: usize,
 }
-impl Hittable for Node<'_> {
-    fn aabb(&self) -> &Aabb {
-        return &self.aabb;
+impl BvhNode {
+    fn new(bvh: &Bvh, left_first: usize, triangle_count: usize) -> Self {
+        return Self {
+            aabb: bvh.triangles[left_first..left_first + triangle_count].aabb(),
+            left_first,
+            triangle_count,
+        };
+    }
+
+    fn triangle_range(&self) -> Range<usize> {
+        return self.left_first..self.left_first + self.triangle_count;
+    }
+}
+
+impl Hittable for Bvh<'_> {
+    fn aabb(&self) -> Aabb {
+        return self.nodes[0].aabb;
     }
 
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
-        if !self.aabb().hit(ray, t_interval) {
-            return None;
-        }
-
-        let hit_left = match &self.left {
-            NodeOrSpheres::Node(node) => node.hit(ray, t_interval),
-            NodeOrSpheres::Spheres(spheres) => hit_a_sphere(spheres, ray, t_interval),
-        };
-
-        let hit_right = match &self.right {
-            NodeOrSpheres::Node(node) => node.hit(ray, t_interval),
-            NodeOrSpheres::Spheres(spheres) => hit_a_sphere(spheres, ray, t_interval),
-        };
-
-        if hit_left.is_none() && hit_right.is_none() {
-            return None;
-        } else if hit_left.is_some() && hit_right.is_none() {
-            return hit_left;
-        } else if hit_left.is_none() && hit_right.is_some() {
-            return hit_right;
-        } else {
-            let left_t = hit_left.as_ref().unwrap().t;
-            let right_t = hit_right.as_ref().unwrap().t;
-            if left_t <= right_t {
-                return hit_left;
-            } else {
-                return hit_right;
-            }
-        }
+        return self.intersect(ray, t_interval, 0);
     }
 }
