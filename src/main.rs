@@ -135,10 +135,10 @@ fn main() {
 
     println!("Building BVH");
     let bvh_start_time = Instant::now();
-    let bvh = Node::new(triangles);
+    let bvh = Bvh::new(triangles);
     println!(
-        "Wall time to build BVH: {:.1} s",
-        bvh_start_time.elapsed().as_secs_f64()
+        "Wall time to build BVH: {:.1} ms",
+        bvh_start_time.elapsed().as_millis()
     );
 
     let look_from = Point::new(-0., 0., -5.);

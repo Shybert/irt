@@ -25,8 +25,8 @@ impl<'a> Triangle<'a> {
     }
 }
 impl Hittable for Triangle<'_> {
-    fn aabb(&self) -> &Aabb {
-        return &self.aabb;
+    fn aabb(&self) -> Aabb {
+        return self.aabb;
     }
 
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {

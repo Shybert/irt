@@ -1,7 +1,7 @@
 use crate::{Interval, Point, Ray, Vec3};
 
 /// Struct for an axis-aligned bounding box
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Aabb {
     pub min: Point,
     pub max: Point,

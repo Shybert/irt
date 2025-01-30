@@ -56,7 +56,7 @@ impl Hittable for Sphere {
         ));
     }
 
-    fn aabb(&self) -> &Aabb {
-        return &self.aabb;
+    fn aabb(&self) -> Aabb {
+        return self.aabb;
     }
 }

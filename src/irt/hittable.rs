@@ -35,32 +35,19 @@ impl<'a> Hit<'a> {
 pub trait Hittable {
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit>;
 
-    fn aabb(&self) -> &Aabb;
+    fn aabb(&self) -> Aabb;
 }
-
-pub struct HittableList<T: Hittable> {
-    objects: Vec<T>,
-    aabb: Aabb,
-}
-impl<T: Hittable> HittableList<T> {
-    pub fn new(objects: Vec<T>) -> Self {
-        let aabb = objects
-            .iter()
-            .fold(Aabb::empty(), |aabb, object| aabb.expand(object.aabb()));
-
-        return Self { objects, aabb };
-    }
-}
-impl<T: Hittable> Hittable for HittableList<T> {
+impl<T: Hittable> Hittable for [T] {
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
         return self
-            .objects
             .iter()
-            .filter_map(|object| object.hit(ray, t_interval))
+            .filter_map(|hittable| hittable.hit(ray, t_interval))
             .min_by(|x, y| x.t.total_cmp(&y.t));
     }
 
-    fn aabb(&self) -> &Aabb {
-        return &self.aabb;
+    fn aabb(&self) -> Aabb {
+        return self.iter().fold(Aabb::empty(), |aabb, hittable| {
+            aabb.expand(&hittable.aabb())
+        });
     }
 }
