@@ -131,27 +131,22 @@ impl<'a> Bvh<'a> {
             return None;
         }
 
-        if node.triangle_count != 0 {
+        if node.is_leaf() {
             return self.triangles[node.triangle_range()].hit(ray, t_interval);
         } else {
             let hit_left = self.intersect(ray, t_interval, node.left_first);
             let hit_right = self.intersect(ray, t_interval, node.left_first + 1);
 
-            if hit_left.is_none() && hit_right.is_none() {
-                return None;
-            } else if hit_left.is_some() && hit_right.is_none() {
-                return hit_left;
-            } else if hit_left.is_none() && hit_right.is_some() {
-                return hit_right;
-            } else {
-                let left_t = hit_left.as_ref().unwrap().t;
-                let right_t = hit_right.as_ref().unwrap().t;
-                if left_t <= right_t {
-                    return hit_left;
-                } else {
-                    return hit_right;
+            return match (&hit_left, &hit_right) {
+                (Some(left), Some(right)) => {
+                    if left.t <= right.t {
+                        hit_left
+                    } else {
+                        hit_right
+                    }
                 }
-            }
+                _ => hit_left.or(hit_right),
+            };
         }
     }
 }
@@ -172,6 +167,11 @@ impl BvhNode {
 
     fn triangle_range(&self) -> Range<usize> {
         return self.left_first..self.left_first + self.triangle_count;
+    }
+
+    /// Returns whether the node is a leaf, i.e. whether it contains triangles
+    fn is_leaf(&self) -> bool {
+        return self.triangle_count > 0;
     }
 }
 
