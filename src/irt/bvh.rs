@@ -2,8 +2,6 @@ use std::ops::Range;
 
 use itertools::partition;
 
-use strum::IntoEnumIterator;
-
 use crate::{Aabb, Axis, Hit, Hittable, Interval, Ray, Triangle};
 
 struct Split {
