@@ -1,4 +1,5 @@
-use indicatif::ProgressBar;
+use indicatif::ParallelProgressIterator;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::{degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Vec3};
 use std::fs::File;
@@ -115,14 +116,32 @@ impl Camera {
     }
 
     /// Returns a camera ray from the origin
-    /// to a randomly sampled point around pixel location `(i, j)`
-    fn get_ray(&self, i: u32, j: u32) -> Ray {
+    /// to a randomly sampled point around pixel location `(x, y)`
+    fn get_ray(&self, (x, y): (u32, u32)) -> Ray {
         let (offset_x, offset_y) = self.sample_square();
         let pixel_sample = self.pixel00_loc
-            + ((i as f32 + offset_x) * self.pixel_delta_u)
-            + ((j as f32 + offset_y) * self.pixel_delta_v);
+            + ((x as f32 + offset_x) * self.pixel_delta_u)
+            + ((y as f32 + offset_y) * self.pixel_delta_v);
 
         return Ray::new(self.center, pixel_sample - self.center);
+    }
+
+    fn coords_from_index(&self, index: u32) -> (u32, u32) {
+        let x = index % self.image_width;
+        let y = index / self.image_width;
+        return (x, y);
+    }
+
+    /// Samples the pixel given by (x, y)
+    /// `self.samples_per_pixel` times.
+    fn sample_pixel(&self, world: &impl Hittable, (x, y): (u32, u32)) -> Color {
+        let mut color = Color::new(0., 0., 0.);
+        for _ in 0..self.samples_per_pixel {
+            let ray = self.get_ray((x, y));
+            color += self.ray_color(&ray, self.max_depth, world);
+        }
+
+        return color * self.pixel_samples_scale;
     }
 
     pub fn render(&self, world: &impl Hittable) {
@@ -134,29 +153,25 @@ impl Camera {
         )
         .unwrap();
 
-        let progress_bar = ProgressBar::new(self.image_height.into());
-        for j in 0..self.image_height {
-            for i in 0..self.image_width {
-                let mut color = Color::new(0., 0., 0.);
-                for _ in 0..self.samples_per_pixel {
-                    let ray = self.get_ray(i, j);
-                    color += self.ray_color(&ray, self.max_depth, world);
-                }
-                color *= self.pixel_samples_scale;
+        let canvas: Vec<Color> = (0..self.image_height * self.image_width)
+            .into_par_iter()
+            .progress_count((self.image_width * self.image_height).into())
+            .map(|index| self.coords_from_index(index))
+            .map(|(x, y)| self.sample_pixel(world, (x, y)))
+            .collect();
 
-                let r = linear_to_gamma(color.r);
-                let g = linear_to_gamma(color.g);
-                let b = linear_to_gamma(color.b);
+        canvas.iter().for_each(|color| {
+            let r = linear_to_gamma(color.r);
+            let g = linear_to_gamma(color.g);
+            let b = linear_to_gamma(color.b);
 
-                let intensity = Interval::new(0., 0.999);
-                let ir = (intensity.clamp(r) * 256.) as u32;
-                let ig = (intensity.clamp(g) * 256.) as u32;
-                let ib = (intensity.clamp(b) * 256.) as u32;
+            let intensity = Interval::new(0., 0.999);
+            let ir = (intensity.clamp(r) * 256.) as u32;
+            let ig = (intensity.clamp(g) * 256.) as u32;
+            let ib = (intensity.clamp(b) * 256.) as u32;
 
-                writeln!(image_file, "{} {} {}\n", ir, ig, ib).unwrap();
-            }
-            progress_bar.inc(1);
-        }
+            writeln!(image_file, "{} {} {}\n", ir, ig, ib).unwrap();
+        });
 
         println!("Print finished.");
     }

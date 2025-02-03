@@ -32,7 +32,7 @@ impl<'a> Hit<'a> {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit>;
 
     fn aabb(&self) -> Aabb;
