@@ -3,7 +3,7 @@ use rand::random;
 use crate::{Color, Hit, Ray, Vec3};
 use std::fmt::Debug;
 
-pub trait Material: Debug {
+pub trait Material: Debug + Sync {
     fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)>;
 }
 
