@@ -137,6 +137,13 @@ fn main() {
         bvh_start_time.elapsed().as_millis()
     );
 
+    let sah_start_time = Instant::now();
+    println!("Total SAH cost: {}", bvh.sah2(0));
+    println!(
+        "Wall time to compute SAH: {:.3} microseconds",
+        sah_start_time.elapsed().as_micros()
+    );
+
     let look_from = Point::new(-0., 0., -5.);
     let look_at = Point::new(0., 0., -1.);
     let up = Vec3::new(0., 1., 0.);

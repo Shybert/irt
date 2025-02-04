@@ -24,6 +24,29 @@ pub struct Bvh<'a> {
     nodes: Vec<BvhNode>,
 }
 impl<'a> Bvh<'a> {
+    pub fn sah2(&self, node_index: usize) -> f32 {
+        const C_I: f32 = 1.2;
+        const C_T: f32 = 1.;
+
+        let node = &self.nodes[node_index];
+        let children = match node.is_leaf() {
+            true => None,
+            false => Some((
+                &self.nodes[node.left_first],
+                &self.nodes[node.left_first + 1],
+            )),
+        };
+
+        return match children {
+            Some((left_child, right_child)) => {
+                C_T + (left_child.aabb.area() * self.sah2(node.left_first)
+                    + (right_child.aabb.area() * self.sah2(node.left_first + 1)))
+                    / (node.aabb.area())
+            }
+            None => C_T + C_I * node.triangle_count as f32,
+        };
+    }
+
     fn sah(triangles: &[Triangle], axis: &Axis, position: f32) -> f32 {
         let mut left_box = Aabb::empty();
         let mut left_count = 0.;
