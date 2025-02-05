@@ -24,20 +24,48 @@ pub struct Bvh<'a> {
     nodes: Vec<BvhNode>,
 }
 impl<'a> Bvh<'a> {
+    fn children(&self, node_index: usize) -> Option<(&BvhNode, &BvhNode)> {
+        let node = &self.nodes[node_index];
+
+        if node.is_leaf() {
+            return None;
+        }
+
+        return Some((
+            &self.nodes[node.left_first],
+            &self.nodes[node.left_first + 1],
+        ));
+    }
+
+    fn recompute_aabb(&mut self, node_index: usize) {
+        let children = self.children(node_index);
+
+        let node = &self.nodes[node_index];
+        self.nodes[node_index].aabb = match children {
+            None => self.triangles[node.triangle_range()].aabb(),
+            Some((left_child, right_child)) => left_child.aabb.expand(&right_child.aabb),
+        };
+    }
+
+    pub fn rotate(&mut self) {
+        let right_child_index = self.nodes[0].left_first + 1;
+        let right_child_left_child_index = self.nodes[right_child_index].left_first;
+
+        let left_child_index = self.nodes[0].left_first;
+
+        self.nodes
+            .swap(left_child_index, right_child_left_child_index);
+
+        self.recompute_aabb(right_child_index);
+        self.recompute_aabb(0);
+    }
+
     pub fn sah2(&self, node_index: usize) -> f32 {
         const C_I: f32 = 1.2;
         const C_T: f32 = 1.;
 
         let node = &self.nodes[node_index];
-        let children = match node.is_leaf() {
-            true => None,
-            false => Some((
-                &self.nodes[node.left_first],
-                &self.nodes[node.left_first + 1],
-            )),
-        };
-
-        return match children {
+        return match self.children(node_index) {
             Some((left_child, right_child)) => {
                 C_T + (left_child.aabb.area() * self.sah2(node.left_first)
                     + (right_child.aabb.area() * self.sah2(node.left_first + 1)))

@@ -131,16 +131,18 @@ fn main() {
 
     println!("Building BVH");
     let bvh_start_time = Instant::now();
-    let bvh = Bvh::new(triangles);
+    let mut bvh = Bvh::new(triangles);
     println!(
         "Wall time to build BVH: {:.1} ms",
         bvh_start_time.elapsed().as_millis()
     );
 
     let sah_start_time = Instant::now();
-    println!("Total SAH cost: {}", bvh.sah2(0));
+    println!("Total SAH cost before: {}", bvh.sah2(0));
+    bvh.rotate();
+    println!("Total SAH cost after: {}", bvh.sah2(0));
     println!(
-        "Wall time to compute SAH: {:.3} microseconds",
+        "Wall time to compute SAH and rotate: {:.3} microseconds",
         sah_start_time.elapsed().as_micros()
     );
 
