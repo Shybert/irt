@@ -60,13 +60,65 @@ impl<'a> Bvh<'a> {
         self.recompute_aabb(0);
     }
 
-    pub fn sah4(&self) -> f32 {
+    pub fn rotation_can_improve(&mut self, node_index: usize, costs: &mut [f32]) {
+        // println!("yes");
+        let node = &self.nodes[node_index];
+        if node.is_leaf() {
+            return;
+        }
+        let right_child_index = node.left_first + 1;
+        let right_child = &self.nodes[right_child_index];
+        if right_child.is_leaf() {
+            return;
+        }
+
+        let left_child_index = node.left_first;
+        let left_child = &self.nodes[left_child_index];
+        let right_child_right_child_index = right_child.left_first + 1;
+        let right_child_right_child = &self.nodes[right_child_right_child_index];
+        let right_new_aabb = left_child.aabb.expand(&right_child_right_child.aabb);
+
+        let surface_left = left_child.aabb.area();
+        let surface_right = right_child_right_child.aabb.area();
+        let cost_left = costs[node.left_first];
+        let cost_right = costs[right_child_right_child_index];
+        let right_child_new_cost = 1.
+            + ((surface_left * cost_left) + (surface_right * cost_right)) / right_child.aabb.area();
+
+        let right_child_left_child_index = right_child.left_first + 1;
+        let right_child_left_child = &self.nodes[right_child_left_child_index];
+
+        let surface_left_2 = right_child_left_child.aabb.area();
+        let cost_left_2 = costs[right_child_left_child_index];
+        let surface_right_2 = right_new_aabb.area();
+        // let cost_right_2 = costs[right_child_index];
+        let new_cost = 1.
+            + ((surface_left_2 * cost_left_2) + (surface_right_2 * right_child_new_cost))
+                / node.aabb.area();
+
+        if new_cost < costs[node_index] {
+            // println!("cheaper!!");
+            // let node_new_aabb = right_child_left_child.aabb.expand(&right_child.aabb);
+            self.nodes
+                .swap(left_child_index, right_child_left_child_index);
+
+            // right_child.aabb = right_new_aabb;
+            // self.nodes[node_index].aabb = node_new_aabb;
+            self.nodes[right_child_index].aabb = right_new_aabb;
+            // self.recompute_aabb(right_child_index);
+            self.recompute_aabb(node_index);
+            costs[node_index] = new_cost;
+            costs[right_child_index] = right_child_new_cost;
+        }
+    }
+
+    pub fn sah4(&mut self) -> f32 {
         let mut costs = vec![0.; self.nodes.len()];
         self.sah_recursive(0, &mut costs);
         return costs[0];
     }
 
-    pub fn sah_recursive(&self, node_index: usize, costs: &mut [f32]) -> f32 {
+    pub fn sah_recursive(&mut self, node_index: usize, costs: &mut [f32]) -> f32 {
         const C_I: f32 = 1.2;
         const C_T: f32 = 1.;
 
@@ -77,13 +129,16 @@ impl<'a> Bvh<'a> {
                 let surface_left = left_child.aabb.area();
                 let surface_right = right_child.aabb.area();
 
-                let cost_left = self.sah_recursive(node.left_first, costs);
-                let cost_right = self.sah_recursive(node.left_first + 1, costs);
+                let left_index = node.left_first;
+                let right_index = node.left_first + 1;
+                let cost_left = self.sah_recursive(left_index, costs);
+                let cost_right = self.sah_recursive(right_index, costs);
 
                 C_T + ((surface_left * cost_left + surface_right * cost_right) / surface_node)
             }
             None => C_T + C_I * node.triangle_count as f32,
         };
+        self.rotation_can_improve(node_index, costs);
         return costs[node_index];
     }
 

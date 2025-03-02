@@ -139,7 +139,7 @@ fn main() {
 
     let sah_start_time = Instant::now();
     println!("Total SAH4 cost before: {}", bvh.sah4());
-    bvh.rotate();
+    // bvh.rotate();
     println!("Total SAH4 cost after: {}", bvh.sah4());
     println!(
         "Wall time to compute SAH and rotate: {:.3} microseconds",

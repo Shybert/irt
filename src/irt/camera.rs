@@ -1,4 +1,4 @@
-use indicatif::ParallelProgressIterator;
+use indicatif::{ParallelProgressIterator, ProgressIterator};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::{degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Vec3};
@@ -154,7 +154,8 @@ impl Camera {
         .unwrap();
 
         let canvas: Vec<Color> = (0..self.image_height * self.image_width)
-            .into_par_iter()
+            // .into_par_iter()
+            .into_iter()
             .progress_count((self.image_width * self.image_height).into())
             .map(|index| self.coords_from_index(index))
             .map(|(x, y)| self.sample_pixel(world, (x, y)))
