@@ -74,8 +74,8 @@ use std::{
 // }
 
 fn basic_scene() {
-    let material_ground = Lambertian::from_color(Color::new(0.8, 0.8, 0.));
-    let material_center = Lambertian::from_color(Color::new(0.1, 0.2, 0.5));
+    let material_ground = Lambertian::new(Box::new(Color::new(0.8, 0.8, 0.)));
+    let material_center = Lambertian::new(Box::new(Color::new(0.1, 0.2, 0.5)));
     let material_left = Dielectric::new(1.5);
     let material_bubble = Dielectric::new(1. / 1.5);
     let material_right = Metal::new(Color::new(0.8, 0.6, 0.2), 0.7);
@@ -123,7 +123,7 @@ fn read_file<'a>(file_name: &str, material: &'a dyn Material) -> Vec<Triangle<'a
 }
 
 fn scene_robot() {
-    let material = Rc::new(Lambertian::from_color(Color::new(0.8, 0.8, 0.)));
+    let material = Rc::new(Lambertian::new(Box::new(Color::new(0.8, 0.8, 0.))));
     let triangles = read_file("assets/unity.tri", material.as_ref());
 
     println!("Building BVH");

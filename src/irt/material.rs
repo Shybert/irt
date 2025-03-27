@@ -1,6 +1,6 @@
 use rand::random;
 
-use crate::{Color, Hit, Ray, SolidColor, Texture, Vec3};
+use crate::{Color, Hit, Ray, Texture, Vec3};
 use std::fmt::Debug;
 
 pub trait Material: Debug + Sync {
@@ -14,11 +14,6 @@ pub struct Lambertian {
 impl Lambertian {
     pub fn new(texture: Box<dyn Texture>) -> Self {
         return Self { texture };
-    }
-    pub fn from_color(albedo: Color) -> Self {
-        return Lambertian {
-            texture: Box::new(SolidColor::new(albedo)),
-        };
     }
 }
 impl Material for Lambertian {
