@@ -122,10 +122,7 @@ fn read_file<'a>(file_name: &str, material: &'a dyn Material) -> Vec<Triangle<'a
         .collect();
 }
 
-fn main() {
-    println!("Hello, world!");
-    let start_time = Instant::now();
-
+fn scene_robot() {
     let material = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.)));
     let triangles = read_file("assets/unity.tri", material.as_ref());
 
@@ -151,13 +148,18 @@ fn main() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(16. / 9., 30., 400, look_from, look_at, up, 100);
     camera.render(&bvh);
+}
 
-    // let scene = 2;
-    // match scene {
-    //     1 => basic_scene(),
-    //     2 => scene_with_a_lot(),
-    //     _ => basic_scene(),
-    // }
+fn main() {
+    println!("Hello, world!");
+    let start_time = Instant::now();
+
+    let scene = 1;
+    match scene {
+        1 => basic_scene(),
+        2 => scene_robot(),
+        _ => basic_scene(),
+    }
 
     println!("Wall time: {:.1} s", start_time.elapsed().as_secs_f64());
 }
