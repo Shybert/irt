@@ -1,6 +1,6 @@
 use rand::random;
 
-use crate::{Color, Hit, Ray, Vec3};
+use crate::{Color, Hit, Ray, SolidColor, Texture, Vec3};
 use std::fmt::Debug;
 
 pub trait Material: Debug + Sync {
@@ -8,15 +8,22 @@ pub trait Material: Debug + Sync {
 }
 
 #[derive(Debug)]
-pub struct Lambertian {
-    albedo: Color,
+pub struct Lambertian<T: Texture> {
+    texture: T,
 }
-impl Lambertian {
-    pub fn new(albedo: Color) -> Self {
-        return Self { albedo };
+impl<T: Texture> Lambertian<T> {
+    pub fn new(texture: T) -> Self {
+        return Self { texture };
     }
 }
-impl Material for Lambertian {
+impl Lambertian<SolidColor> {
+    pub fn from_color(albedo: Color) -> Lambertian<SolidColor> {
+        return Lambertian {
+            texture: SolidColor::new(albedo),
+        };
+    }
+}
+impl<T: Texture + Sync> Material for Lambertian<T> {
     fn scatter(&self, _ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
         let mut scatter_direction = hit.normal + Vec3::random_unit_vector();
         if scatter_direction.near_zero() {
@@ -24,7 +31,7 @@ impl Material for Lambertian {
         }
         let scattered_ray = Ray::new(hit.point, scatter_direction);
 
-        return Some((scattered_ray, self.albedo));
+        return Some((scattered_ray, self.texture.value(0., 0., hit.point)));
     }
 }
 

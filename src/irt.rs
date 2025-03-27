@@ -39,3 +39,6 @@ pub use bvh::*;
 
 mod triangle;
 pub use triangle::*;
+
+mod texture;
+pub use texture::*;
