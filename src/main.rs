@@ -74,7 +74,12 @@ use std::{
 // }
 
 fn basic_scene() {
-    let material_ground = Lambertian::new(Box::new(Color::new(0.8, 0.8, 0.)));
+    let white_green_checker = CheckeredTexture::new(
+        0.4,
+        Box::new(Color::new(0.2, 0.3, 0.1)),
+        Box::new(Color::new(0.9, 0.9, 0.9)),
+    );
+    let material_ground = Lambertian::new(Box::new(white_green_checker));
     let material_center = Lambertian::new(Box::new(Color::new(0.1, 0.2, 0.5)));
     let material_left = Dielectric::new(1.5);
     let material_bubble = Dielectric::new(1. / 1.5);
