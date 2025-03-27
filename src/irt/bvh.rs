@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use itertools::partition;
 
-use crate::{Aabb, Axis, Hit, Hittable, Interval, Ray, Triangle};
+use crate::{Aabb, Axis, Hit, Hittable, Interval, Ray};
 
 struct Split {
     axis: Axis,
@@ -19,11 +19,11 @@ impl Split {
     }
 }
 
-pub struct Bvh<'a> {
-    triangles: Vec<Triangle<'a>>,
+pub struct Bvh<T: Hittable> {
+    hittables: Vec<T>,
     nodes: Vec<BvhNode>,
 }
-impl<'a> Bvh<'a> {
+impl<T: Hittable> Bvh<T> {
     fn children(&self, node_index: usize) -> Option<(&BvhNode, &BvhNode)> {
         let node = &self.nodes[node_index];
 
@@ -42,7 +42,7 @@ impl<'a> Bvh<'a> {
 
         let node = &self.nodes[node_index];
         self.nodes[node_index].aabb = match children {
-            None => self.triangles[node.triangle_range()].aabb(),
+            None => self.hittables[node.hittable_range()].aabb(),
             Some((left_child, right_child)) => left_child.aabb.expand(&right_child.aabb),
         };
     }
@@ -71,27 +71,23 @@ impl<'a> Bvh<'a> {
                     + (right_child.aabb.area() * self.sah2(node.left_first + 1)))
                     / (node.aabb.area())
             }
-            None => C_T + C_I * node.triangle_count as f32,
+            None => C_T + C_I * node.hittable_count as f32,
         };
     }
 
-    fn sah(triangles: &[Triangle], axis: &Axis, position: f32) -> f32 {
+    fn sah(hittables: &[T], axis: &Axis, position: f32) -> f32 {
         let mut left_box = Aabb::empty();
         let mut left_count = 0.;
         let mut right_box = Aabb::empty();
         let mut right_count = 0.;
 
-        for triangle in triangles {
-            if triangle.centroid[axis] < position {
+        for hittable in hittables {
+            if hittable.centroid()[axis] < position {
                 left_count += 1.;
-                left_box.expand_to_point(&triangle.a);
-                left_box.expand_to_point(&triangle.b);
-                left_box.expand_to_point(&triangle.c);
+                left_box = left_box.expand(&hittable.aabb());
             } else {
                 right_count += 1.;
-                right_box.expand_to_point(&triangle.a);
-                right_box.expand_to_point(&triangle.b);
-                right_box.expand_to_point(&triangle.c);
+                right_box = right_box.expand(&hittable.aabb());
             }
         }
 
@@ -99,14 +95,14 @@ impl<'a> Bvh<'a> {
         return if cost > 0. { cost } else { f32::INFINITY };
     }
 
-    fn best_split(triangles: &[Triangle]) -> Split {
+    fn best_split(hittables: &[T]) -> Split {
         let mut best_split = Split::new(Axis::X, 0., f32::INFINITY);
 
         for axis in Axis::iter() {
             let mut bound = Interval::empty();
-            for triangle in triangles {
-                bound.min = bound.min.min(triangle.centroid[&axis]);
-                bound.max = bound.max.max(triangle.centroid[&axis]);
+            for hittable in hittables {
+                bound.min = bound.min.min(hittable.centroid()[&axis]);
+                bound.max = bound.max.max(hittable.centroid()[&axis]);
             }
             if bound.min == bound.max {
                 continue;
@@ -116,7 +112,7 @@ impl<'a> Bvh<'a> {
             let scale = bound.size() / num_intervals as f32;
             for i in 1..num_intervals {
                 let candidate_position = bound.min + i as f32 * scale;
-                let cost = Self::sah(triangles, &axis, candidate_position);
+                let cost = Self::sah(hittables, &axis, candidate_position);
                 if cost <= best_split.cost {
                     best_split = Split::new(axis, candidate_position, cost);
                 }
@@ -129,16 +125,16 @@ impl<'a> Bvh<'a> {
     fn subdivide(&mut self, node_index: usize) {
         let node = &self.nodes[node_index];
 
-        let best_split = Self::best_split(&self.triangles[node.triangle_range()]);
-        let parent_cost = node.aabb.area() * node.triangle_count as f32;
+        let best_split = Self::best_split(&self.hittables[node.hittable_range()]);
+        let parent_cost = node.aabb.area() * node.hittable_count as f32;
         if best_split.cost >= parent_cost {
             return;
         }
 
-        let split_index = partition(&mut self.triangles[node.triangle_range()], |triangle| {
-            triangle.centroid[&best_split.axis] <= best_split.position
+        let split_index = partition(&mut self.hittables[node.hittable_range()], |hittable| {
+            hittable.centroid()[&best_split.axis] <= best_split.position
         });
-        if split_index == 0 || split_index == node.triangle_count {
+        if split_index == 0 || split_index == node.hittable_count {
             return;
         }
 
@@ -146,7 +142,7 @@ impl<'a> Bvh<'a> {
         let right_node = BvhNode::new(
             self,
             node.left_first + split_index,
-            node.triangle_count - split_index,
+            node.hittable_count - split_index,
         );
 
         let left_index = self.nodes.len();
@@ -156,16 +152,16 @@ impl<'a> Bvh<'a> {
         self.subdivide(left_index + 1);
 
         self.nodes[node_index].left_first = left_index;
-        self.nodes[node_index].triangle_count = 0;
+        self.nodes[node_index].hittable_count = 0;
 
         return;
     }
 
-    pub fn new(triangles: Vec<Triangle<'a>>) -> Self {
-        let nodes = Vec::with_capacity(triangles.len() * 2 - 1);
+    pub fn new(hittables: Vec<T>) -> Self {
+        let nodes = Vec::with_capacity(hittables.len() * 2 - 1);
 
-        let mut bvh = Self { triangles, nodes };
-        let root_node = BvhNode::new(&bvh, 0, bvh.triangles.len());
+        let mut bvh = Self { hittables, nodes };
+        let root_node = BvhNode::new(&bvh, 0, bvh.hittables.len());
 
         bvh.nodes.push(root_node);
         bvh.subdivide(0);
@@ -181,7 +177,7 @@ impl<'a> Bvh<'a> {
         }
 
         if node.is_leaf() {
-            return self.triangles[node.triangle_range()].hit(ray, t_interval);
+            return self.hittables[node.hittable_range()].hit(ray, t_interval);
         } else {
             let hit_left = self.intersect(ray, t_interval, node.left_first);
             let hit_right = self.intersect(ray, t_interval, node.left_first + 1);
@@ -203,28 +199,28 @@ impl<'a> Bvh<'a> {
 struct BvhNode {
     aabb: Aabb,
     left_first: usize,
-    triangle_count: usize,
+    hittable_count: usize,
 }
 impl BvhNode {
-    fn new(bvh: &Bvh, left_first: usize, triangle_count: usize) -> Self {
+    fn new<T: Hittable>(bvh: &Bvh<T>, left_first: usize, hittable_count: usize) -> Self {
         return Self {
-            aabb: bvh.triangles[left_first..left_first + triangle_count].aabb(),
+            aabb: bvh.hittables[left_first..left_first + hittable_count].aabb(),
             left_first,
-            triangle_count,
+            hittable_count,
         };
     }
 
-    fn triangle_range(&self) -> Range<usize> {
-        return self.left_first..self.left_first + self.triangle_count;
+    fn hittable_range(&self) -> Range<usize> {
+        return self.left_first..self.left_first + self.hittable_count;
     }
 
-    /// Returns whether the node is a leaf, i.e. whether it contains triangles
+    /// Returns whether the node is a leaf, i.e. whether it contains hittables
     fn is_leaf(&self) -> bool {
-        return self.triangle_count > 0;
+        return self.hittable_count > 0;
     }
 }
 
-impl Hittable for Bvh<'_> {
+impl<T: Hittable> Hittable for Bvh<T> {
     fn aabb(&self) -> Aabb {
         return self.nodes[0].aabb;
     }
