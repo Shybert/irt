@@ -36,6 +36,11 @@ pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit>;
 
     fn aabb(&self) -> Aabb;
+
+    fn centroid(&self) -> Point {
+        let aabb = self.aabb();
+        return aabb.min + aabb.extent() * 0.5;
+    }
 }
 impl<T: Hittable> Hittable for [T] {
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
