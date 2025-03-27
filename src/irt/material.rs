@@ -8,22 +8,20 @@ pub trait Material: Debug + Sync {
 }
 
 #[derive(Debug)]
-pub struct Lambertian<T: Texture> {
-    texture: T,
+pub struct Lambertian {
+    texture: Box<dyn Texture>,
 }
-impl<T: Texture> Lambertian<T> {
-    pub fn new(texture: T) -> Self {
+impl Lambertian {
+    pub fn new(texture: Box<dyn Texture>) -> Self {
         return Self { texture };
     }
-}
-impl Lambertian<SolidColor> {
-    pub fn from_color(albedo: Color) -> Lambertian<SolidColor> {
+    pub fn from_color(albedo: Color) -> Self {
         return Lambertian {
-            texture: SolidColor::new(albedo),
+            texture: Box::new(SolidColor::new(albedo)),
         };
     }
 }
-impl<T: Texture + Sync> Material for Lambertian<T> {
+impl Material for Lambertian {
     fn scatter(&self, _ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
         let mut scatter_direction = hit.normal + Vec3::random_unit_vector();
         if scatter_direction.near_zero() {
