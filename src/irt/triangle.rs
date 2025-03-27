@@ -29,6 +29,10 @@ impl Hittable for Triangle<'_> {
         return self.aabb;
     }
 
+    fn centroid(&self) -> Point {
+        return self.centroid;
+    }
+
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
         let edge_1 = self.b - self.a;
         let edge_2 = self.c - self.a;

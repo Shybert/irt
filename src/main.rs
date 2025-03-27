@@ -95,8 +95,8 @@ fn basic_scene() {
 
     let camera = Camera::new(16. / 9., 30., 400, look_from, look_at, up, 100);
 
-    // let bvh = Node::new(world);
-    // camera.render(&bvh);
+    let bvh = Bvh::new(world);
+    camera.render(&bvh);
 }
 
 fn parse_triangle<'a>(line: &str, material: &'a dyn Material) -> Triangle<'a> {
