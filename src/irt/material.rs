@@ -90,6 +90,6 @@ impl Material for Dielectric {
             false => unit_in_direction.refract(&hit.normal, refractive_index_ratio),
         };
 
-        return Some((Ray::new(hit.point, out_direction), Color::new(1., 1., 1.)));
+        return Some((Ray::new(hit.point, out_direction), Color::white()));
     }
 }

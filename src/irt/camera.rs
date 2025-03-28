@@ -88,12 +88,12 @@ impl Camera {
 
     fn background(&self, ray: &Ray) -> Color {
         let a = 0.5 * (ray.direction.normalize().y + 1.);
-        return (1. - a) * Color::new(1., 1., 1.) + a * Color::new(0.5, 0.7, 1.0);
+        return (1. - a) * Color::white() + a * Color::new(0.5, 0.7, 1.0);
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
         if depth == 0 {
-            return Color::new(0., 0., 0.);
+            return Color::black();
         }
 
         let potential_hit = world.hit(ray, &mut Interval::new(0.001, f32::INFINITY));
@@ -105,7 +105,7 @@ impl Camera {
             Some((scattered, attenuation)) => {
                 attenuation * self.ray_color(&scattered, depth - 1, world)
             }
-            None => Color::new(0., 0., 0.),
+            None => Color::black(),
         };
     }
 
@@ -135,7 +135,7 @@ impl Camera {
     /// Samples the pixel given by (x, y)
     /// `self.samples_per_pixel` times.
     fn sample_pixel(&self, world: &impl Hittable, (x, y): (u32, u32)) -> Color {
-        let mut color = Color::new(0., 0., 0.);
+        let mut color = Color::black();
         for _ in 0..self.samples_per_pixel {
             let ray = self.get_ray((x, y));
             color += self.ray_color(&ray, self.max_depth, world);
