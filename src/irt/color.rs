@@ -15,6 +15,18 @@ impl Color {
         return Self { r, g, b };
     }
 
+    pub fn black() -> Self {
+        return Self::new(0., 0., 0.);
+    }
+
+    pub fn white() -> Self {
+        return Self::new(1., 1., 1.);
+    }
+
+    pub fn cyan() -> Self {
+        return Self::new(0., 1., 1.);
+    }
+
     pub fn random() -> Self {
         let mut rng = thread_rng();
         return Self::new(rng.gen(), rng.gen(), rng.gen());
