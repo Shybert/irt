@@ -1,3 +1,5 @@
+use image::Rgb32FImage;
+
 use crate::Point;
 
 use crate::Color;
@@ -40,5 +42,30 @@ impl Texture for CheckeredTexture {
         } else {
             self.odd.value(u, v, point)
         };
+    }
+}
+
+#[derive(Debug)]
+pub struct ImageTexture {
+    img: Rgb32FImage,
+}
+impl ImageTexture {
+    pub fn new(image_filename: &str) -> Self {
+        return Self {
+            img: image::open(image_filename).unwrap().to_rgb32f(),
+        };
+    }
+}
+impl Texture for ImageTexture {
+    fn value(&self, u: f32, v: f32, _point: Point) -> Color {
+        if self.img.width() == 0 || self.img.height() == 0 {
+            return Color::cyan();
+        }
+
+        let x = (u * self.img.width() as f32) as u32;
+        let y = ((1. - v) * self.img.height() as f32) as u32;
+        let pixel = self.img.get_pixel(x, y).0;
+
+        return Color::new(pixel[0], pixel[1], pixel[2]);
     }
 }

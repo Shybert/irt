@@ -70,6 +70,8 @@ impl Hittable for Triangle<'_> {
             edge_2.cross(&edge_1),
             t,
             self.material,
+            0.,
+            0.,
         ));
     }
 }

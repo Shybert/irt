@@ -24,7 +24,7 @@ impl Material for Lambertian {
         }
         let scattered_ray = Ray::new(hit.point, scatter_direction);
 
-        return Some((scattered_ray, self.texture.value(0., 0., hit.point)));
+        return Some((scattered_ray, self.texture.value(hit.u, hit.v, hit.point)));
     }
 }
 

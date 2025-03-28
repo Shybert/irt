@@ -7,6 +7,8 @@ pub struct Hit<'a> {
     pub t: f32,
     pub front_face: bool,
     pub material: &'a dyn Material,
+    pub u: f32,
+    pub v: f32,
 }
 impl<'a> Hit<'a> {
     pub fn new(
@@ -15,6 +17,8 @@ impl<'a> Hit<'a> {
         outward_normal: Vec3,
         t: f32,
         material: &'a dyn Material,
+        u: f32,
+        v: f32,
     ) -> Self {
         let front_face = ray.direction.dot(&outward_normal) < 0.;
         let normal = match front_face {
@@ -28,6 +32,8 @@ impl<'a> Hit<'a> {
             t,
             front_face,
             material,
+            u,
+            v,
         };
     }
 }
