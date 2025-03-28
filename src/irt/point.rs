@@ -36,6 +36,11 @@ impl Point {
         );
     }
 }
+impl From<Vec3> for Point {
+    fn from(vec3: Vec3) -> Self {
+        return Self::new(vec3.x, vec3.y, vec3.z);
+    }
+}
 impl Add for Point {
     type Output = Self;
 
