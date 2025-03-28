@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::f32::consts::PI;
 
 use crate::{Aabb, Hit, Hittable, Interval, Material, Point, Ray, Vec3};
 
@@ -21,6 +21,15 @@ impl<'a> Sphere<'a> {
             material,
             aabb,
         };
+    }
+
+    pub fn uv_at(point: &Point) -> (f32, f32) {
+        let theta = (-point.y).acos();
+        let phi = (-point.z).atan2(point.x) + PI;
+
+        let u = phi / (2. * PI);
+        let v = theta / PI;
+        return (u, v);
     }
 }
 impl Hittable for Sphere<'_> {
@@ -47,13 +56,9 @@ impl Hittable for Sphere<'_> {
         let t = root;
         t_interval.max = t;
         let point = ray.at(t);
-        return Some(Hit::new(
-            ray,
-            point,
-            (point - self.center) / self.radius,
-            t,
-            self.material,
-        ));
+        let outward_normal = (point - self.center) / self.radius;
+        let (u, v) = Sphere::uv_at(&outward_normal.into());
+        return Some(Hit::new(ray, point, outward_normal, t, self.material, u, v));
     }
 
     fn aabb(&self) -> Aabb {

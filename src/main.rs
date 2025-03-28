@@ -104,6 +104,43 @@ fn basic_scene() {
     camera.render(&bvh);
 }
 
+fn checkered_spheres() {
+    let white_green_checker = CheckeredTexture::new(
+        0.4,
+        Box::new(Color::new(0.2, 0.3, 0.1)),
+        Box::new(Color::new(0.9, 0.9, 0.9)),
+    );
+    let material = Lambertian::new(Box::new(white_green_checker));
+
+    let world = vec![
+        Sphere::new(Point::new(0., -10., 0.), 10., &material),
+        Sphere::new(Point::new(0., 10., 0.), 10., &material),
+    ];
+
+    let look_from = Point::new(13., 2., 3.);
+    let look_at = Point::new(0., 0., 0.);
+    let up = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(16. / 9., 20., 400, look_from, look_at, up, 100);
+
+    let bvh = Bvh::new(world);
+    camera.render(&bvh);
+}
+
+fn earth() {
+    let earth_texture = ImageTexture::new("assets/earthmap.jpg");
+    let earth_material = Lambertian::new(Box::new(earth_texture));
+
+    let world = vec![Sphere::new(Point::new(0., 0., 0.), 2., &earth_material)];
+
+    let look_from = Point::new(0., 12., 5.);
+    let look_at = Point::new(0., 0., 0.);
+    let up = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(16. / 9., 20., 400, look_from, look_at, up, 100);
+
+    let bvh = Bvh::new(world);
+    camera.render(&bvh);
+}
+
 fn parse_triangle<'a>(line: &str, material: &'a dyn Material) -> Triangle<'a> {
     let values: Vec<f32> = line
         .split_whitespace()
@@ -159,10 +196,12 @@ fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 1;
+    let scene = 4;
     match scene {
         1 => basic_scene(),
         2 => scene_robot(),
+        3 => checkered_spheres(),
+        4 => earth(),
         _ => basic_scene(),
     }
 
