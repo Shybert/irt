@@ -1,4 +1,5 @@
 use image::Rgb32FImage;
+use rand::random;
 
 use crate::Point;
 
@@ -67,5 +68,18 @@ impl Texture for ImageTexture {
         let pixel = self.img.get_pixel(x, y).0;
 
         return Color::new(pixel[0], pixel[1], pixel[2]);
+    }
+}
+
+#[derive(Debug)]
+pub struct NoiseTexture {}
+impl NoiseTexture {
+    pub fn new() -> Self {
+        return Self {};
+    }
+}
+impl Texture for NoiseTexture {
+    fn value(&self, u: f32, v: f32, point: Point) -> Color {
+        return Color::white() * random::<f32>();
     }
 }
