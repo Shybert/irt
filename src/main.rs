@@ -141,6 +141,24 @@ fn earth() {
     camera.render(&bvh);
 }
 
+fn noise_scene() {
+    let texture = NoiseTexture::new();
+    let material = Lambertian::new(Box::new(texture));
+
+    let world = vec![
+        Sphere::new(Point::new(0., -1000., 0.), 1000., &material),
+        Sphere::new(Point::new(0., 2., 0.), 2., &material),
+    ];
+
+    let look_from = Point::new(13., 2., 3.);
+    let look_at = Point::new(0., 0., 0.);
+    let up = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(16. / 9., 20., 400, look_from, look_at, up, 100);
+
+    let bvh = Bvh::new(world);
+    camera.render(&bvh);
+}
+
 fn parse_triangle<'a>(line: &str, material: &'a dyn Material) -> Triangle<'a> {
     let values: Vec<f32> = line
         .split_whitespace()
@@ -196,12 +214,13 @@ fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 4;
+    let scene = 5;
     match scene {
         1 => basic_scene(),
         2 => scene_robot(),
         3 => checkered_spheres(),
         4 => earth(),
+        5 => noise_scene(),
         _ => basic_scene(),
     }
 
