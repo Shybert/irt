@@ -17,7 +17,10 @@ impl Perlin {
     }
 
     pub fn noise(&self, point: &Point) -> f32 {
-        let index = (point.x.abs().floor() as usize) % 256;
-        return self.permutation[index];
+        let x = (point.x.floor() as i32) & 255;
+        let y = (point.y.floor() as i32) & 255;
+        let z = (point.z.floor() as i32) & 255;
+
+        return self.permutation[(x ^ y ^ z) as usize];
     }
 }
