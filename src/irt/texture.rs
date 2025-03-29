@@ -6,6 +6,8 @@ use crate::Point;
 use crate::Color;
 use std::fmt::Debug;
 
+use super::Perlin;
+
 pub trait Texture: Debug + Sync + Send {
     fn value(&self, u: f32, v: f32, point: Point) -> Color;
 }
@@ -72,14 +74,18 @@ impl Texture for ImageTexture {
 }
 
 #[derive(Debug)]
-pub struct NoiseTexture {}
+pub struct NoiseTexture {
+    noise: Perlin,
+}
 impl NoiseTexture {
     pub fn new() -> Self {
-        return Self {};
+        return Self {
+            noise: Perlin::new(),
+        };
     }
 }
 impl Texture for NoiseTexture {
     fn value(&self, u: f32, v: f32, point: Point) -> Color {
-        return Color::white() * random::<f32>();
+        return Color::white() * self.noise.noise(&point);
     }
 }
