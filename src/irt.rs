@@ -42,3 +42,6 @@ pub use triangle::*;
 
 mod texture;
 pub use texture::*;
+
+mod noise;
+pub use noise::*;
