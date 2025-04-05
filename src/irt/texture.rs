@@ -88,6 +88,6 @@ impl NoiseTexture {
 }
 impl Texture for NoiseTexture {
     fn value(&self, u: f32, v: f32, point: Point) -> Color {
-        return Color::white() * self.noise.noise(&(self.scale * point));
+        return Color::white() * 0.5 * (1. + self.noise.noise(&(self.scale * point)));
     }
 }
