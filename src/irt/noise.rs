@@ -5,23 +5,29 @@ use rand::thread_rng;
 
 use super::{lerp, Point};
 
+/// Implementation of improved Perlin noise.
+/// Implemented with the help of these resources:
+/// <https://raytracing.github.io/books/RayTracingTheNextWeek.html>
+/// <https://adrianb.io/2014/08/09/perlinnoise.html>
+/// <https://riven8192.blogspot.com/2010/08/calculate-perlinnoise-twice-as-fast.html>
+/// <https://mrl.cs.nyu.edu/~perlin/noise/>
 #[derive(Debug)]
 pub struct Perlin {
-    permutation: [usize; 512],
+    /// The permutation table. It contains all integers from 0..=255,
+    /// in a random order, repeated once.
+    p: [usize; 512],
 }
 impl Perlin {
     pub fn new() -> Self {
         let mut rng = thread_rng();
 
-        let mut perm2: [usize; 256] = array::from_fn(|i| i);
-        perm2.shuffle(&mut rng);
-        let mut perm = [0; 512];
-        for i in 0..256 {
-            perm[i] = perm2[i];
-            perm[i + 256] = perm2[i];
-        }
+        let mut permutation = [0; 512];
+        let (lower, upper) = permutation.split_at_mut(256);
+        lower.copy_from_slice(&array::from_fn::<usize, 256, _>(|i| i));
+        lower.shuffle(&mut rng);
+        upper.copy_from_slice(lower);
 
-        return Self { permutation: perm };
+        return Self { p: permutation };
     }
 
     pub fn noise(&self, point: &Point) -> f32 {
@@ -36,21 +42,14 @@ impl Perlin {
         let v = Perlin::fade(y);
         let w = Perlin::fade(z);
 
-        let aaa = self.permutation[self.permutation[self.permutation[cube_x] + cube_y] + cube_z];
-        let aba =
-            self.permutation[self.permutation[self.permutation[cube_x] + cube_y + 1] + cube_z];
-        let aab =
-            self.permutation[self.permutation[self.permutation[cube_x] + cube_y] + cube_z + 1];
-        let abb =
-            self.permutation[self.permutation[self.permutation[cube_x] + cube_y + 1] + cube_z + 1];
-        let baa =
-            self.permutation[self.permutation[self.permutation[cube_x + 1] + cube_y] + cube_z];
-        let bba =
-            self.permutation[self.permutation[self.permutation[cube_x + 1] + cube_y + 1] + cube_z];
-        let bab =
-            self.permutation[self.permutation[self.permutation[cube_x + 1] + cube_y] + cube_z + 1];
-        let bbb = self.permutation
-            [self.permutation[self.permutation[cube_x + 1] + cube_y + 1] + cube_z + 1];
+        let aaa = self.p[self.p[self.p[cube_x] + cube_y] + cube_z];
+        let aba = self.p[self.p[self.p[cube_x] + cube_y + 1] + cube_z];
+        let aab = self.p[self.p[self.p[cube_x] + cube_y] + cube_z + 1];
+        let abb = self.p[self.p[self.p[cube_x] + cube_y + 1] + cube_z + 1];
+        let baa = self.p[self.p[self.p[cube_x + 1] + cube_y] + cube_z];
+        let bba = self.p[self.p[self.p[cube_x + 1] + cube_y + 1] + cube_z];
+        let bab = self.p[self.p[self.p[cube_x + 1] + cube_y] + cube_z + 1];
+        let bbb = self.p[self.p[self.p[cube_x + 1] + cube_y + 1] + cube_z + 1];
 
         return Perlin::trilinear_interpolation(
             [
@@ -69,11 +68,11 @@ impl Perlin {
         );
     }
 
-    pub fn fade(t: f32) -> f32 {
+    fn fade(t: f32) -> f32 {
         return t * t * t * (t * (t * 6. - 15.) + 10.);
     }
 
-    pub fn gradient(&self, value: usize, x: f32, y: f32, z: f32) -> f32 {
+    fn gradient(&self, value: usize, x: f32, y: f32, z: f32) -> f32 {
         let hash = value & 15;
         match hash {
             0 => x + y,
@@ -96,7 +95,7 @@ impl Perlin {
         }
     }
 
-    pub fn trilinear_interpolation(cube: [f32; 8], x: f32, y: f32, z: f32) -> f32 {
+    fn trilinear_interpolation(cube: [f32; 8], x: f32, y: f32, z: f32) -> f32 {
         let c00 = lerp(cube[0], cube[1], x);
         let c01 = lerp(cube[2], cube[3], x);
         let c10 = lerp(cube[4], cube[5], x);
