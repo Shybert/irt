@@ -1,5 +1,4 @@
 use image::Rgb32FImage;
-use rand::random;
 
 use crate::Point;
 
@@ -87,7 +86,7 @@ impl NoiseTexture {
     }
 }
 impl Texture for NoiseTexture {
-    fn value(&self, u: f32, v: f32, point: Point) -> Color {
+    fn value(&self, _u: f32, _v: f32, point: Point) -> Color {
         return Color::white() * 0.5 * (1. + self.noise.noise(&(self.scale * point)));
     }
 }

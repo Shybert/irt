@@ -1,6 +1,5 @@
 mod irt;
 use irt::*;
-use rand::prelude::*;
 
 use std::{
     fs::File,
