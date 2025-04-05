@@ -142,7 +142,7 @@ fn earth() {
 }
 
 fn noise_scene() {
-    let texture = NoiseTexture::new();
+    let texture = NoiseTexture::new(4.);
     let material = Lambertian::new(Box::new(texture));
 
     let world = vec![
