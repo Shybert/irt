@@ -1,13 +1,12 @@
 use std::array;
 
 use rand::seq::SliceRandom;
-use rand::{random, thread_rng, Rng};
+use rand::thread_rng;
 
 use super::{lerp, Point};
 
 #[derive(Debug)]
 pub struct Perlin {
-    random_float: [f32; 256],
     permutation: [usize; 512],
 }
 impl Perlin {
@@ -22,10 +21,7 @@ impl Perlin {
             perm[i + 256] = perm2[i];
         }
 
-        return Self {
-            random_float: array::from_fn(|_| rng.gen()),
-            permutation: perm,
-        };
+        return Self { permutation: perm };
     }
 
     pub fn noise(&self, point: &Point) -> f32 {
@@ -58,14 +54,14 @@ impl Perlin {
 
         return Perlin::trilinear_interpolation(
             [
-                self.random_float[aaa],
-                self.random_float[baa],
-                self.random_float[aba],
-                self.random_float[bba],
-                self.random_float[aab],
-                self.random_float[bab],
-                self.random_float[abb],
-                self.random_float[bbb],
+                self.gradient(aaa, x, y, z),
+                self.gradient(baa, x - 1., y, z),
+                self.gradient(aba, x, y - 1., z),
+                self.gradient(bba, x - 1., y - 1., z),
+                self.gradient(aab, x, y, z - 1.),
+                self.gradient(bab, x - 1., y, z - 1.),
+                self.gradient(abb, x, y - 1., z - 1.),
+                self.gradient(bbb, x - 1., y - 1., z - 1.),
             ],
             u,
             v,
@@ -77,7 +73,7 @@ impl Perlin {
         return t * t * t * (t * (t * 6. - 15.) + 10.);
     }
 
-    pub fn grad(&self, value: i32, x: f32, y: f32, z: f32) -> f32 {
+    pub fn gradient(&self, value: usize, x: f32, y: f32, z: f32) -> f32 {
         let hash = value & 15;
         match hash {
             0 => x + y,
