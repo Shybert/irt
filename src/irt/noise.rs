@@ -36,6 +36,9 @@ impl Perlin {
         let x = point.x - point.x.floor();
         let y = point.y - point.y.floor();
         let z = point.z - point.z.floor();
+        let u = Perlin::fade(x);
+        let v = Perlin::fade(y);
+        let w = Perlin::fade(z);
 
         let aaa = self.permutation[self.permutation[self.permutation[cube_x] + cube_y] + cube_z];
         let aba =
@@ -64,10 +67,14 @@ impl Perlin {
                 self.random_float[abb],
                 self.random_float[bbb],
             ],
-            x,
-            y,
-            z,
+            u,
+            v,
+            w,
         );
+    }
+
+    pub fn fade(t: f32) -> f32 {
+        return t * t * t * (t * (t * 6. - 15.) + 10.);
     }
 
     pub fn grad(&self, value: i32, x: f32, y: f32, z: f32) -> f32 {
