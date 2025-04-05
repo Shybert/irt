@@ -21,11 +21,14 @@ impl CameraBasis {
 }
 
 pub struct Camera {
+    #[allow(dead_code)]
     aspect_ratio: f32,
     image_width: u32,
     image_height: u32,
+    #[allow(dead_code)]
     vertical_fov: f32,
     center: Point,
+    #[allow(dead_code)]
     basis: CameraBasis,
     pixel00_loc: Point,
     pixel_delta_u: Vec3,

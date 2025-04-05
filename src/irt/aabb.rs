@@ -28,6 +28,7 @@ impl Aabb {
         return Self::new(self.min.min(&other.min), self.max.max(&other.max));
     }
 
+    #[allow(dead_code)]
     pub fn expand_to_point(&mut self, point: &Point) {
         self.min = self.min.min(point);
         self.max = self.max.max(point);
