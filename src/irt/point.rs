@@ -1,5 +1,5 @@
 use crate::{Axis, Vec3};
-use std::ops::{Add, Index, Mul, Sub};
+use std::ops::{Add, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -91,6 +91,15 @@ impl Index<&Axis> for Point {
             Axis::X => &self.x,
             Axis::Y => &self.y,
             Axis::Z => &self.z,
+        }
+    }
+}
+impl IndexMut<&Axis> for Point {
+    fn index_mut(&mut self, axis: &Axis) -> &mut Self::Output {
+        match axis {
+            Axis::X => &mut self.x,
+            Axis::Y => &mut self.y,
+            Axis::Z => &mut self.z,
         }
     }
 }
