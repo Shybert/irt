@@ -94,6 +94,58 @@ fn noise_scene() {
     camera.render(&bvh);
 }
 
+fn quads() {
+    let left_red = Lambertian::new(Box::new(Color::new(1.0, 0.2, 0.2)));
+    let back_green = Lambertian::new(Box::new(Color::new(0.2, 1.0, 0.2)));
+    let upper_orange = Lambertian::new(Box::new(Color::new(1.0, 0.5, 0.)));
+
+    let earth_texture = ImageTexture::new("assets/earthmap.jpg");
+    let earth_material = Lambertian::new(Box::new(earth_texture));
+
+    let noise_material = Lambertian::new(Box::new(NoiseTexture::new(4.)));
+
+    let world = vec![
+        Quad::new(
+            Point::new(-3., -2., 5.),
+            Vec3::new(0., 0., -4.),
+            Vec3::new(0., 4., 0.),
+            &left_red,
+        ),
+        Quad::new(
+            Point::new(-2., -2., 0.),
+            Vec3::new(4., 0., 0.),
+            Vec3::new(0., 4., 0.),
+            &back_green,
+        ),
+        Quad::new(
+            Point::new(3., -2., 1.),
+            Vec3::new(0., 0., 4.),
+            Vec3::new(0., 4., 0.),
+            &earth_material,
+        ),
+        Quad::new(
+            Point::new(-2., 3., 1.),
+            Vec3::new(4., 0., 0.),
+            Vec3::new(0., 0., 4.),
+            &upper_orange,
+        ),
+        Quad::new(
+            Point::new(-2., -3., 5.),
+            Vec3::new(4., 0., 0.),
+            Vec3::new(0., 0., -4.),
+            &noise_material,
+        ),
+    ];
+
+    let look_from = Point::new(0., 0., 9.);
+    let look_at = Point::new(0., 0., 0.);
+    let up = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(1., 80., 400, look_from, look_at, up, 100);
+
+    let bvh = Bvh::new(world);
+    camera.render(&bvh);
+}
+
 fn parse_triangle<'a>(line: &str, material: &'a dyn Material) -> Triangle<'a> {
     let values: Vec<f32> = line
         .split_whitespace()
@@ -149,13 +201,14 @@ fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 5;
+    let scene = 6;
     match scene {
         1 => basic_scene(),
         2 => scene_robot(),
         3 => checkered_spheres(),
         4 => earth(),
         5 => noise_scene(),
+        6 => quads(),
         _ => basic_scene(),
     }
 

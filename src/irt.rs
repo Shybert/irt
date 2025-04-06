@@ -45,3 +45,6 @@ pub use texture::*;
 
 mod noise;
 pub use noise::*;
+
+mod quad;
+pub use quad::*;
