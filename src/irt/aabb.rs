@@ -1,4 +1,4 @@
-use crate::{Interval, Point, Ray, Vec3};
+use crate::{Axis, Interval, Point, Ray, Vec3};
 
 /// Struct for an axis-aligned bounding box
 #[derive(Debug, Clone, Copy)]
@@ -7,8 +7,21 @@ pub struct Aabb {
     pub max: Point,
 }
 impl Aabb {
+    const MINIMUM_SIZE: f32 = 0.0001;
+    fn pad_to_minimums(&mut self) {
+        for axis in Axis::iter() {
+            let delta = self.max[&axis] - self.min[&axis];
+            if delta < Aabb::MINIMUM_SIZE {
+                self.min[&axis] -= Aabb::MINIMUM_SIZE / 2.;
+                self.max[&axis] += Aabb::MINIMUM_SIZE / 2.;
+            }
+        }
+    }
+
     pub fn new(min: Point, max: Point) -> Self {
-        return Self { min, max };
+        let mut aabb = Self { min, max };
+        aabb.pad_to_minimums();
+        return aabb;
     }
 
     pub fn empty() -> Self {
