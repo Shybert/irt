@@ -62,3 +62,21 @@ impl<T: Hittable> Hittable for [T] {
         });
     }
 }
+
+// This might be hacky? But it allows using trait objects
+// with BVHs while also allowing static dispatch for worlds
+// containing only a single primitive. This might be pre-mature
+// optimization, but it is cool!
+impl Hittable for &dyn Hittable {
+    fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
+        return (*self).hit(ray, t_interval);
+    }
+
+    fn aabb(&self) -> Aabb {
+        return (*self).aabb();
+    }
+
+    fn centroid(&self) -> Point {
+        return (*self).centroid();
+    }
+}
