@@ -33,7 +33,16 @@ fn basic_scene() {
     let look_at = Point::new(0., 0., -1.);
     let up = Vec3::new(0., 1., 0.);
 
-    let camera = Camera::new(16. / 9., 30., 400, look_from, look_at, up, 100);
+    let camera = Camera::new(
+        16. / 9.,
+        30.,
+        400,
+        look_from,
+        look_at,
+        up,
+        100,
+        Color::new(0.7, 0.8, 1.),
+    );
 
     let bvh = Bvh::new(world);
     camera.render(&bvh);
@@ -55,7 +64,16 @@ fn checkered_spheres() {
     let look_from = Point::new(13., 2., 3.);
     let look_at = Point::new(0., 0., 0.);
     let up = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(16. / 9., 20., 400, look_from, look_at, up, 100);
+    let camera = Camera::new(
+        16. / 9.,
+        20.,
+        400,
+        look_from,
+        look_at,
+        up,
+        100,
+        Color::new(0.7, 0.8, 1.),
+    );
 
     let bvh = Bvh::new(world);
     camera.render(&bvh);
@@ -70,7 +88,16 @@ fn earth() {
     let look_from = Point::new(0., 12., 5.);
     let look_at = Point::new(0., 0., 0.);
     let up = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(16. / 9., 20., 400, look_from, look_at, up, 100);
+    let camera = Camera::new(
+        16. / 9.,
+        20.,
+        400,
+        look_from,
+        look_at,
+        up,
+        100,
+        Color::new(0.7, 0.8, 1.),
+    );
 
     let bvh = Bvh::new(world);
     camera.render(&bvh);
@@ -88,7 +115,16 @@ fn noise_scene() {
     let look_from = Point::new(13., 2., 3.);
     let look_at = Point::new(0., 0., 0.);
     let up = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(16. / 9., 20., 400, look_from, look_at, up, 100);
+    let camera = Camera::new(
+        16. / 9.,
+        20.,
+        400,
+        look_from,
+        look_at,
+        up,
+        100,
+        Color::new(0.7, 0.8, 1.),
+    );
 
     let bvh = Bvh::new(world);
     camera.render(&bvh);
@@ -140,7 +176,51 @@ fn quads() {
     let look_from = Point::new(0., 0., 9.);
     let look_at = Point::new(0., 0., 0.);
     let up = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(1., 80., 400, look_from, look_at, up, 100);
+    let camera = Camera::new(
+        1.,
+        80.,
+        400,
+        look_from,
+        look_at,
+        up,
+        100,
+        Color::new(0.7, 0.8, 1.),
+    );
+
+    let bvh = Bvh::new(world);
+    camera.render(&bvh);
+}
+
+fn simple_light() {
+    let noise_texture = NoiseTexture::new(4.);
+    let noise_material = Lambertian::new(Box::new(noise_texture));
+
+    let light_material = DiffuseLight::new(Box::new(Color::new(4., 4., 4.)));
+
+    let ground = Sphere::new(Point::new(0., -1000., 0.), 1000., &noise_material);
+    let ball = Sphere::new(Point::new(0., 2., 0.), 2., &noise_material);
+    let quad_light = Quad::new(
+        Point::new(3., 1., -2.),
+        Vec3::new(2., 0., 0.),
+        Vec3::new(0., 2., 0.),
+        &light_material,
+    );
+    let sphere_light = Sphere::new(Point::new(0., 7., 0.), 2., &light_material);
+    let world: Vec<&dyn Hittable> = vec![&ground, &ball, &quad_light, &sphere_light];
+
+    let look_from = Point::new(26., 3., 6.);
+    let look_at = Point::new(0., 2., 0.);
+    let up = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(
+        16. / 9.,
+        20.,
+        400,
+        look_from,
+        look_at,
+        up,
+        100,
+        Color::black(),
+    );
 
     let bvh = Bvh::new(world);
     camera.render(&bvh);
@@ -193,7 +273,16 @@ fn scene_robot() {
     let look_from = Point::new(-0., 0., -5.);
     let look_at = Point::new(0., 0., -1.);
     let up = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(16. / 9., 30., 400, look_from, look_at, up, 100);
+    let camera = Camera::new(
+        16. / 9.,
+        30.,
+        400,
+        look_from,
+        look_at,
+        up,
+        100,
+        Color::new(0.7, 0.8, 1.),
+    );
     camera.render(&bvh);
 }
 
@@ -201,7 +290,7 @@ fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 6;
+    let scene = 7;
     match scene {
         1 => basic_scene(),
         2 => scene_robot(),
@@ -209,6 +298,7 @@ fn main() {
         4 => earth(),
         5 => noise_scene(),
         6 => quads(),
+        7 => simple_light(),
         _ => basic_scene(),
     }
 

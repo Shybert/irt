@@ -1,10 +1,15 @@
 use rand::random;
 
-use crate::{Color, Hit, Ray, Texture, Vec3};
+use crate::{Color, Hit, Point, Ray, Texture, Vec3};
 use std::fmt::Debug;
 
 pub trait Material: Debug + Sync {
-    fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)>;
+    fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
+        return None;
+    }
+    fn emitted(&self, u: f32, v: f32, point: Point) -> Color {
+        return Color::black();
+    }
 }
 
 #[derive(Debug)]
@@ -91,5 +96,20 @@ impl Material for Dielectric {
         };
 
         return Some((Ray::new(hit.point, out_direction), Color::white()));
+    }
+}
+
+#[derive(Debug)]
+pub struct DiffuseLight {
+    texture: Box<dyn Texture>,
+}
+impl DiffuseLight {
+    pub fn new(texture: Box<dyn Texture>) -> Self {
+        return Self { texture };
+    }
+}
+impl Material for DiffuseLight {
+    fn emitted(&self, u: f32, v: f32, point: Point) -> Color {
+        return self.texture.value(u, v, point);
     }
 }

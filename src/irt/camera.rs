@@ -36,6 +36,7 @@ pub struct Camera {
     samples_per_pixel: u32,
     pixel_samples_scale: f32,
     max_depth: u32,
+    background: Color,
 }
 impl Camera {
     pub fn new(
@@ -46,6 +47,7 @@ impl Camera {
         look_at: Point,
         up: Vec3,
         samples_per_pixel: u32,
+        background: Color,
     ) -> Self {
         // Image height should be at least 1
         let mut image_height = (image_width as f32 / aspect_ratio) as u32;
@@ -86,12 +88,8 @@ impl Camera {
             samples_per_pixel,
             pixel_samples_scale,
             max_depth: 10,
+            background,
         };
-    }
-
-    fn background(&self, ray: &Ray) -> Color {
-        let a = 0.5 * (ray.direction.normalize().y + 1.);
-        return (1. - a) * Color::white() + a * Color::new(0.5, 0.7, 1.0);
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
@@ -101,15 +99,18 @@ impl Camera {
 
         let potential_hit = world.hit(ray, &mut Interval::new(0.001, f32::INFINITY));
         let Some(hit) = potential_hit else {
-            return self.background(ray);
+            return self.background;
         };
 
-        return match hit.material.scatter(ray, &hit) {
-            Some((scattered, attenuation)) => {
-                attenuation * self.ray_color(&scattered, depth - 1, world)
-            }
-            None => Color::black(),
+        let color_from_emission = hit.material.emitted(hit.u, hit.v, hit.point);
+
+        let potential_scatter = hit.material.scatter(ray, &hit);
+        let Some((scattered, attenuation)) = potential_scatter else {
+            return color_from_emission;
         };
+        let color_from_scatter = attenuation * self.ray_color(&scattered, depth - 1, world);
+
+        return color_from_emission + color_from_scatter;
     }
 
     /// Returns the `x` and `y` coordinates of a random point
