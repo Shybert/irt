@@ -41,7 +41,7 @@ fn basic_scene() {
         look_at,
         up,
         100,
-        Color::new(0.7, 0.8, 1.),
+        Box::new(Color::new(0.7, 0.8, 1.)),
     );
 
     let bvh = Bvh::new(world);
@@ -72,7 +72,7 @@ fn checkered_spheres() {
         look_at,
         up,
         100,
-        Color::new(0.7, 0.8, 1.),
+        Box::new(Color::new(0.7, 0.8, 1.)),
     );
 
     let bvh = Bvh::new(world);
@@ -96,7 +96,7 @@ fn earth() {
         look_at,
         up,
         100,
-        Color::new(0.7, 0.8, 1.),
+        Box::new(Color::new(0.7, 0.8, 1.)),
     );
 
     let bvh = Bvh::new(world);
@@ -123,7 +123,7 @@ fn noise_scene() {
         look_at,
         up,
         100,
-        Color::new(0.7, 0.8, 1.),
+        Box::new(Color::new(0.7, 0.8, 1.)),
     );
 
     let bvh = Bvh::new(world);
@@ -184,7 +184,7 @@ fn quads() {
         look_at,
         up,
         100,
-        Color::new(0.7, 0.8, 1.),
+        Box::new(Color::new(0.7, 0.8, 1.)),
     );
 
     let bvh = Bvh::new(world);
@@ -219,7 +219,7 @@ fn simple_light() {
         look_at,
         up,
         100,
-        Color::black(),
+        Box::new(Color::black()),
     );
 
     let bvh = Bvh::new(world);
@@ -281,7 +281,7 @@ fn scene_robot() {
         look_at,
         up,
         100,
-        Color::new(0.7, 0.8, 1.),
+        Box::new(Color::new(0.7, 0.8, 1.)),
     );
     camera.render(&bvh);
 }
@@ -290,7 +290,7 @@ fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 7;
+    let scene = 6;
     match scene {
         1 => basic_scene(),
         2 => scene_robot(),

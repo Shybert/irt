@@ -1,7 +1,10 @@
 use indicatif::ParallelProgressIterator;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-use crate::{degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Vec3};
+use crate::{
+    degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Texture, Vec3,
+};
+use std::f32::consts::PI;
 use std::fs::File;
 use std::io::Write;
 
@@ -36,7 +39,7 @@ pub struct Camera {
     samples_per_pixel: u32,
     pixel_samples_scale: f32,
     max_depth: u32,
-    background: Color,
+    background: Box<dyn Texture>,
 }
 impl Camera {
     pub fn new(
@@ -47,7 +50,7 @@ impl Camera {
         look_at: Point,
         up: Vec3,
         samples_per_pixel: u32,
-        background: Color,
+        background: Box<dyn Texture>,
     ) -> Self {
         // Image height should be at least 1
         let mut image_height = (image_width as f32 / aspect_ratio) as u32;
@@ -92,6 +95,10 @@ impl Camera {
         };
     }
 
+    fn background_color(&self, ray: &Ray) -> Color {
+        return self.background.value(0., 0., Point::new(0., 0., 0.));
+    }
+
     fn ray_color(&self, ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
         if depth == 0 {
             return Color::black();
@@ -99,7 +106,7 @@ impl Camera {
 
         let potential_hit = world.hit(ray, &mut Interval::new(0.001, f32::INFINITY));
         let Some(hit) = potential_hit else {
-            return self.background;
+            return self.background_color(ray);
         };
 
         let color_from_emission = hit.material.emitted(hit.u, hit.v, hit.point);
