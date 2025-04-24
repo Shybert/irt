@@ -226,6 +226,69 @@ fn simple_light() {
     camera.render(&bvh);
 }
 
+fn cornell_box() {
+    let red = Lambertian::new(Box::new(Color::new(0.65, 0.05, 0.05)));
+    let green = Lambertian::new(Box::new(Color::new(0.12, 0.45, 0.15)));
+    let white = Lambertian::new(Box::new(Color::new(0.73, 0.73, 0.73)));
+    let light = DiffuseLight::new(Box::new(Color::new(15., 15., 15.)));
+
+    let world = vec![
+        Quad::new(
+            Point::new(555., 0., 0.),
+            Vec3::new(0., 555., 0.),
+            Vec3::new(0., 0., 555.),
+            &green,
+        ),
+        Quad::new(
+            Point::new(0., 0., 0.),
+            Vec3::new(0., 555., 0.),
+            Vec3::new(0., 0., 555.),
+            &red,
+        ),
+        Quad::new(
+            Point::new(343., 554., 332.),
+            Vec3::new(-130., 0., 0.),
+            Vec3::new(0., 0., -105.),
+            &light,
+        ),
+        Quad::new(
+            Point::new(0., 0., 0.),
+            Vec3::new(555., 0., 0.),
+            Vec3::new(0., 0., 555.),
+            &white,
+        ),
+        Quad::new(
+            Point::new(0., 555., 0.),
+            Vec3::new(555., 0., 0.),
+            Vec3::new(0., 0., 555.),
+            &white,
+        ),
+        Quad::new(
+            Point::new(0., 0., 555.),
+            Vec3::new(555., 0., 0.),
+            Vec3::new(0., 555., 0.),
+            &white,
+        ),
+    ];
+
+    let look_from = Point::new(278., 278., -800.);
+    let look_at = Point::new(278., 278., 0.);
+    let up = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(
+        1.,
+        40.,
+        600,
+        look_from,
+        look_at,
+        up,
+        200,
+        Box::new(Color::black()),
+    );
+
+    let bvh = Bvh::new(world);
+    camera.render(&bvh);
+}
+
 fn parse_triangle<'a>(line: &str, material: &'a dyn Material) -> Triangle<'a> {
     let values: Vec<f32> = line
         .split_whitespace()
@@ -290,7 +353,7 @@ fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 6;
+    let scene = 8;
     match scene {
         1 => basic_scene(),
         2 => scene_robot(),
@@ -299,6 +362,7 @@ fn main() {
         5 => noise_scene(),
         6 => quads(),
         7 => simple_light(),
+        8 => cornell_box(),
         _ => basic_scene(),
     }
 
