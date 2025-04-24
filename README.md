@@ -31,3 +31,7 @@ Render a scene with `cargo run --release`. The scene is written to disk as the i
 
 - Clone the repository
 - Render a scene with `cargo run --release`. Scenes can be chosen in [./src/main.rs](./src/main.rs).
+
+## License
+
+Licensed under the [GPL-3.0 license](./LICENSE).
