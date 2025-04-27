@@ -48,3 +48,6 @@ pub use noise::*;
 
 mod quad;
 pub use quad::*;
+
+mod matrix;
+pub use matrix::*;
