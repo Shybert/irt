@@ -1,4 +1,4 @@
-use crate::{Axis, Interval, Point};
+use crate::{irt::approx_equals, Axis, Interval, Point};
 use rand::prelude::*;
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
@@ -129,6 +129,13 @@ impl Vec3 {
             return vector_on_unit_sphere;
         }
         return -vector_on_unit_sphere;
+    }
+}
+impl PartialEq for Vec3 {
+    fn eq(&self, other: &Self) -> bool {
+        return approx_equals(self.x, other.x)
+            && approx_equals(self.y, other.y)
+            && approx_equals(self.z, other.z);
     }
 }
 impl Add for Vec3 {

@@ -1,4 +1,4 @@
-use crate::{Axis, Vec3};
+use crate::{irt::approx_equals, Axis, Vec3};
 use std::ops::{Add, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
@@ -39,6 +39,13 @@ impl Point {
 impl From<Vec3> for Point {
     fn from(vec3: Vec3) -> Self {
         return Self::new(vec3.x, vec3.y, vec3.z);
+    }
+}
+impl PartialEq for Point {
+    fn eq(&self, other: &Self) -> bool {
+        return approx_equals(self.x, other.x)
+            && approx_equals(self.y, other.y)
+            && approx_equals(self.z, other.z);
     }
 }
 impl Add for Point {
