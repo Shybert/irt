@@ -2,7 +2,7 @@ use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 use rand::prelude::*;
 
-use crate::Interval;
+use crate::irt::Interval;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Color {

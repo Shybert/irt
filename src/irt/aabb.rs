@@ -1,4 +1,4 @@
-use crate::{Axis, Interval, Point, Ray, Vec3};
+use crate::irt::{Axis, Interval, Point, Ray, Vec3};
 
 /// Struct for an axis-aligned bounding box
 #[derive(Debug, Clone, Copy)]

@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use crate::{Aabb, Hit, Hittable, Interval, Material, Point, Ray, Vec3};
+use crate::irt::{Aabb, Hit, Hittable, Interval, Material, Point, Ray, Vec3};
 
 #[derive(Debug)]
 pub struct Sphere<'a> {

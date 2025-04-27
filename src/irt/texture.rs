@@ -1,8 +1,8 @@
 use image::Rgb32FImage;
 
-use crate::Point;
+use crate::irt::Point;
 
-use crate::Color;
+use crate::irt::Color;
 use std::fmt::Debug;
 
 use super::Perlin;

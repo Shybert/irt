@@ -1,4 +1,4 @@
-use crate::{Aabb, Hit, Hittable, Interval, Material, Point, Ray, Vec3};
+use crate::irt::{Aabb, Hit, Hittable, Interval, Material, Point, Ray, Vec3};
 
 /// A quadrilateral (techinally a parallellogram).
 /// Defined by:

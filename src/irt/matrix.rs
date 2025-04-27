@@ -1,9 +1,6 @@
 use std::ops::{Index, IndexMut, Mul};
 
-use crate::{
-    approx_equals,
-    irt::{Point, Vec3},
-};
+use crate::irt::{approx_equals, Point, Vec3};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Matrix {

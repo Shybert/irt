@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use itertools::partition;
 
-use crate::{Aabb, Axis, Hit, Hittable, Interval, Ray};
+use crate::irt::{Aabb, Axis, Hit, Hittable, Interval, Ray};
 
 struct Split {
     axis: Axis,

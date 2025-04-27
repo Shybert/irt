@@ -1,6 +1,6 @@
 use rand::random;
 
-use crate::{Color, Hit, Point, Ray, Texture, Vec3};
+use crate::irt::{Color, Hit, Point, Ray, Texture, Vec3};
 use std::fmt::Debug;
 
 pub trait Material: Debug + Sync {

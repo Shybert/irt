@@ -1,4 +1,4 @@
-use crate::{Aabb, Hit, Hittable, Interval, Material, Point, Ray};
+use crate::irt::{Aabb, Hit, Hittable, Interval, Material, Point, Ray};
 
 #[derive(Debug)]
 pub struct Triangle<'a> {

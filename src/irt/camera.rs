@@ -1,7 +1,7 @@
 use indicatif::ParallelProgressIterator;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-use crate::{
+use crate::irt::{
     degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Texture, Vec3,
 };
 use std::f32::consts::PI;

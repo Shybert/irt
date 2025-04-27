@@ -1,4 +1,4 @@
-use crate::{irt::approx_equals, Axis, Vec3};
+use crate::irt::{approx_equals, Axis, Vec3};
 use std::ops::{Add, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]

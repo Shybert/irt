@@ -1,4 +1,4 @@
-use crate::{Aabb, Interval, Material, Point, Ray, Vec3};
+use crate::irt::{Aabb, Interval, Material, Point, Ray, Vec3};
 
 #[derive(Debug)]
 pub struct Hit<'a> {

@@ -1,4 +1,4 @@
-use crate::{irt::approx_equals, Axis, Interval, Point};
+use crate::irt::{approx_equals, Axis, Interval, Point};
 use rand::prelude::*;
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
