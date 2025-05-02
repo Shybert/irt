@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut, Mul};
 
-use crate::irt::{approx_equals, Point, Vec3};
+use crate::irt::{approx_equals, Point, Ray, Vec3};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Matrix {
@@ -181,6 +181,14 @@ impl Mul<Point> for Matrix {
             point.x * self[(1, 0)] + point.y * self[(1, 1)] + point.z * self[(1, 2)] + self[(1, 3)],
             point.x * self[(2, 0)] + point.y * self[(2, 1)] + point.z * self[(2, 2)] + self[(2, 3)],
         );
+    }
+}
+
+impl Mul<Ray> for Matrix {
+    type Output = Ray;
+
+    fn mul(self, ray: Ray) -> Ray {
+        return Ray::new(self * ray.origin, self * ray.direction);
     }
 }
 
