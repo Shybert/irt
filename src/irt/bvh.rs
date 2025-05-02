@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use itertools::partition;
 
-use crate::irt::{Aabb, Axis, Hit, Hittable, Interval, Ray};
+use crate::irt::{Aabb, Axis, Hit, Hittable, Interval, Matrix, Ray};
 
 struct Split {
     axis: Axis,
@@ -227,5 +227,28 @@ impl<T: Hittable> Hittable for Bvh<T> {
 
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
         return self.intersect(ray, t_interval, 0);
+    }
+}
+
+struct BVHInstance<'a, T: Hittable> {
+    bvh: &'a Bvh<T>,
+    inverse_transform: Matrix,
+}
+impl<'a, T: Hittable> BVHInstance<'a, T> {
+    pub fn new(bvh: &'a Bvh<T>, inverse_transform: Matrix) -> Self {
+        return Self {
+            bvh,
+            inverse_transform,
+        };
+    }
+}
+
+impl<T: Hittable> Hittable for BVHInstance<'_, T> {
+    fn aabb(&self) -> Aabb {
+        return self.bvh.aabb();
+    }
+
+    fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
+        return self.bvh.hit(&(self.inverse_transform * *ray), t_interval);
     }
 }
