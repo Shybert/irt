@@ -230,15 +230,15 @@ impl<T: Hittable> Hittable for Bvh<T> {
     }
 }
 
-struct BVHInstance<'a, T: Hittable> {
+pub struct BVHInstance<'a, T: Hittable> {
     bvh: &'a Bvh<T>,
     inverse_transform: Matrix,
 }
 impl<'a, T: Hittable> BVHInstance<'a, T> {
-    pub fn new(bvh: &'a Bvh<T>, inverse_transform: Matrix) -> Self {
+    pub fn new(bvh: &'a Bvh<T>, transform: Matrix) -> Self {
         return Self {
             bvh,
-            inverse_transform,
+            inverse_transform: transform.inverse(),
         };
     }
 }
