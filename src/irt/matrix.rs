@@ -21,6 +21,15 @@ impl Matrix {
         ]);
     }
 
+    pub fn transpose(&self) -> Self {
+        return Self::new([
+            [self[(0, 0)], self[(1, 0)], self[(2, 0)], self[(3, 0)]],
+            [self[(0, 1)], self[(1, 1)], self[(2, 1)], self[(3, 1)]],
+            [self[(0, 2)], self[(1, 2)], self[(2, 2)], self[(3, 2)]],
+            [self[(0, 3)], self[(1, 3)], self[(2, 3)], self[(3, 3)]],
+        ]);
+    }
+
     pub fn inverse(&self) -> Self {
         let mut inverse = Self::identity();
         let mut copy = *self;
@@ -310,6 +319,25 @@ mod tests {
     }
 
     #[test]
+    fn transpose() {
+        let matrix = Matrix::new([
+            [0., 9., 3., 0.],
+            [9., 8., 0., 8.],
+            [1., 8., 5., 3.],
+            [0., 0., 5., 8.],
+        ]);
+        let transposed_matrix = Matrix::new([
+            [0., 9., 1., 0.],
+            [9., 8., 8., 0.],
+            [3., 0., 5., 5.],
+            [0., 8., 3., 8.],
+        ]);
+
+        assert_eq!(matrix.transpose(), transposed_matrix);
+        assert_eq!(matrix.transpose().transpose(), matrix);
+    }
+
+    #[test]
     fn invert() {
         let matrix = Matrix::new([
             [-5., 2., 6., -8.],
@@ -404,6 +432,11 @@ mod tests {
         assert_eq!(identity * vector, vector);
     }
 
+    #[test]
+    fn transposing_identity_matrix_does_nothing() {
+        let identity = Matrix::identity();
+        assert_eq!(identity.transpose(), identity);
+    }
     #[test]
     fn inverting_identity_matrix_does_nothing() {
         let identity = Matrix::identity();
