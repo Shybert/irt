@@ -319,6 +319,49 @@ mod tests {
     }
 
     #[test]
+    fn matrix_vector_multiplication() {
+        let matrix = Matrix::new([
+            [1., 2., 3., 4.],
+            [2., 4., 4., 2.],
+            [8., 6., 4., 1.],
+            [0., 0., 0., 1.],
+        ]);
+        let vector = Vec3::new(1., 2., 3.);
+
+        let expected = Vec3::new(14., 22., 32.);
+        assert_eq!(matrix * vector, expected);
+    }
+
+    #[test]
+    fn matrix_point_multiplication() {
+        let matrix = Matrix::new([
+            [1., 2., 3., 4.],
+            [2., 4., 4., 2.],
+            [8., 6., 4., 2.],
+            [0., 0., 0., 1.],
+        ]);
+        let point = Point::new(1., 2., 3.);
+
+        let expected = Point::new(18., 24., 34.);
+        assert_eq!(matrix * point, expected);
+    }
+
+    #[test]
+    fn matrix_ray_multiplication() {
+        let ray = Ray::new(Point::new(1., 2., 3.), Vec3::new(0., 1., 0.));
+
+        let translation = Matrix::identity().translate(3., 4., 5.);
+        let translated_ray = translation * ray;
+        assert_eq!(translated_ray.origin, Point::new(4., 6., 8.,));
+        assert_eq!(translated_ray.direction, Vec3::new(0., 1., 0.,));
+
+        let scaling = Matrix::identity().scale(2., 3., 4.);
+        let scaled_ray = scaling * ray;
+        assert_eq!(scaled_ray.origin, Point::new(2., 6., 12.,));
+        assert_eq!(scaled_ray.direction, Vec3::new(0., 3., 0.,));
+    }
+
+    #[test]
     fn transpose() {
         let matrix = Matrix::new([
             [0., 9., 3., 0.],
