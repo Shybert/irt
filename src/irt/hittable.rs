@@ -41,11 +41,11 @@ impl<'a> Hit<'a> {
 pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit>;
 
-    fn aabb(&self) -> Aabb;
+    fn bounds(&self) -> Aabb;
 
     fn centroid(&self) -> Point {
-        let aabb = self.aabb();
-        return aabb.min + aabb.extent() * 0.5;
+        let bounds = self.bounds();
+        return bounds.min + bounds.extent() * 0.5;
     }
 }
 impl<T: Hittable> Hittable for [T] {
@@ -56,9 +56,9 @@ impl<T: Hittable> Hittable for [T] {
             .min_by(|x, y| x.t.total_cmp(&y.t));
     }
 
-    fn aabb(&self) -> Aabb {
-        return self.iter().fold(Aabb::empty(), |aabb, hittable| {
-            aabb.expand(&hittable.aabb())
+    fn bounds(&self) -> Aabb {
+        return self.iter().fold(Aabb::empty(), |bounds, hittable| {
+            bounds.expand(&hittable.bounds())
         });
     }
 }
@@ -72,8 +72,8 @@ impl Hittable for &dyn Hittable {
         return (*self).hit(ray, t_interval);
     }
 
-    fn aabb(&self) -> Aabb {
-        return (*self).aabb();
+    fn bounds(&self) -> Aabb {
+        return (*self).bounds();
     }
 
     fn centroid(&self) -> Point {

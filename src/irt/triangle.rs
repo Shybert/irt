@@ -6,27 +6,27 @@ pub struct Triangle<'a> {
     pub b: Point,
     pub c: Point,
     pub centroid: Point,
-    aabb: Aabb,
+    bounds: Aabb,
     pub material: &'a dyn Material,
 }
 impl<'a> Triangle<'a> {
     pub fn new(a: Point, b: Point, c: Point, material: &'a dyn Material) -> Self {
         let centroid = (a + b + c) * (1. / 3.);
-        let aabb = Aabb::new(a.min(&b.min(&c)), a.max(&b.max(&c)));
+        let bounds = Aabb::new(a.min(&b.min(&c)), a.max(&b.max(&c)));
 
         return Triangle {
             a,
             b,
             c,
             centroid,
-            aabb,
+            bounds,
             material,
         };
     }
 }
 impl Hittable for Triangle<'_> {
-    fn aabb(&self) -> Aabb {
-        return self.aabb;
+    fn bounds(&self) -> Aabb {
+        return self.bounds;
     }
 
     fn centroid(&self) -> Point {

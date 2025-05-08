@@ -37,13 +37,13 @@ impl<T: Hittable> Bvh<T> {
         ));
     }
 
-    fn recompute_aabb(&mut self, node_index: usize) {
+    fn recompute_bounds(&mut self, node_index: usize) {
         let children = self.children(node_index);
 
         let node = &self.nodes[node_index];
-        self.nodes[node_index].aabb = match children {
-            None => self.hittables[node.hittable_range()].aabb(),
-            Some((left_child, right_child)) => left_child.aabb.expand(&right_child.aabb),
+        self.nodes[node_index].bounds = match children {
+            None => self.hittables[node.hittable_range()].bounds(),
+            Some((left_child, right_child)) => left_child.bounds.expand(&right_child.bounds),
         };
     }
 
@@ -56,8 +56,8 @@ impl<T: Hittable> Bvh<T> {
         self.nodes
             .swap(left_child_index, right_child_left_child_index);
 
-        self.recompute_aabb(right_child_index);
-        self.recompute_aabb(0);
+        self.recompute_bounds(right_child_index);
+        self.recompute_bounds(0);
     }
 
     pub fn sah2(&self, node_index: usize) -> f32 {
@@ -67,9 +67,9 @@ impl<T: Hittable> Bvh<T> {
         let node = &self.nodes[node_index];
         return match self.children(node_index) {
             Some((left_child, right_child)) => {
-                C_T + (left_child.aabb.area() * self.sah2(node.left_first)
-                    + (right_child.aabb.area() * self.sah2(node.left_first + 1)))
-                    / (node.aabb.area())
+                C_T + (left_child.bounds.area() * self.sah2(node.left_first)
+                    + (right_child.bounds.area() * self.sah2(node.left_first + 1)))
+                    / (node.bounds.area())
             }
             None => C_T + C_I * node.hittable_count as f32,
         };
@@ -84,10 +84,10 @@ impl<T: Hittable> Bvh<T> {
         for hittable in hittables {
             if hittable.centroid()[axis] < position {
                 left_count += 1.;
-                left_box = left_box.expand(&hittable.aabb());
+                left_box = left_box.expand(&hittable.bounds());
             } else {
                 right_count += 1.;
-                right_box = right_box.expand(&hittable.aabb());
+                right_box = right_box.expand(&hittable.bounds());
             }
         }
 
@@ -126,7 +126,7 @@ impl<T: Hittable> Bvh<T> {
         let node = &self.nodes[node_index];
 
         let best_split = Self::best_split(&self.hittables[node.hittable_range()]);
-        let parent_cost = node.aabb.area() * node.hittable_count as f32;
+        let parent_cost = node.bounds.area() * node.hittable_count as f32;
         if best_split.cost >= parent_cost {
             return;
         }
@@ -172,7 +172,7 @@ impl<T: Hittable> Bvh<T> {
 
     fn intersect(&self, ray: &Ray, t_interval: &mut Interval, node_index: usize) -> Option<Hit> {
         let node = &self.nodes[node_index];
-        if !node.aabb.hit(ray, t_interval) {
+        if !node.bounds.hit(ray, t_interval) {
             return None;
         }
 
@@ -197,14 +197,14 @@ impl<T: Hittable> Bvh<T> {
 }
 #[derive(Debug)]
 struct BvhNode {
-    aabb: Aabb,
+    bounds: Aabb,
     left_first: usize,
     hittable_count: usize,
 }
 impl BvhNode {
     fn new<T: Hittable>(bvh: &Bvh<T>, left_first: usize, hittable_count: usize) -> Self {
         return Self {
-            aabb: bvh.hittables[left_first..left_first + hittable_count].aabb(),
+            bounds: bvh.hittables[left_first..left_first + hittable_count].bounds(),
             left_first,
             hittable_count,
         };
@@ -221,8 +221,8 @@ impl BvhNode {
 }
 
 impl<T: Hittable> Hittable for Bvh<T> {
-    fn aabb(&self) -> Aabb {
-        return self.nodes[0].aabb;
+    fn bounds(&self) -> Aabb {
+        return self.nodes[0].bounds;
     }
 
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
@@ -244,8 +244,9 @@ impl<'a, T: Hittable> BVHInstance<'a, T> {
 }
 
 impl<T: Hittable> Hittable for BVHInstance<'_, T> {
-    fn aabb(&self) -> Aabb {
-        return self.bvh.aabb();
+    fn bounds(&self) -> Aabb {
+        return self.bvh.bounds();
+    }
     }
 
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {

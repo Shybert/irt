@@ -7,19 +7,19 @@ pub struct Sphere<'a> {
     pub center: Point,
     pub radius: f32,
     pub material: &'a dyn Material,
-    aabb: Aabb,
+    bounds: Aabb,
 }
 impl<'a> Sphere<'a> {
     pub fn new(center: Point, radius: f32, material: &'a dyn Material) -> Self {
         let radius2 = radius.max(0.);
         let radius_vector = Vec3::new(radius2, radius2, radius2);
-        let aabb = Aabb::new(center - radius_vector, center + radius_vector);
+        let bounds = Aabb::new(center - radius_vector, center + radius_vector);
 
         return Self {
             center,
             radius: radius2,
             material,
-            aabb,
+            bounds,
         };
     }
 
@@ -61,7 +61,7 @@ impl Hittable for Sphere<'_> {
         return Some(Hit::new(ray, point, outward_normal, t, self.material, u, v));
     }
 
-    fn aabb(&self) -> Aabb {
-        return self.aabb;
+    fn bounds(&self) -> Aabb {
+        return self.bounds;
     }
 }

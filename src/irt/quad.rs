@@ -17,16 +17,16 @@ pub struct Quad<'a> {
     /// Pre-calculated used to determine the planar coordinates of an intersection
     w: Vec3,
     material: &'a dyn Material,
-    aabb: Aabb,
+    bounds: Aabb,
     normal: Vec3,
     /// The `d` in the general equation of a plane, pre-calculated
     d: f32,
 }
 impl<'a> Quad<'a> {
     pub fn new(q: Point, u: Vec3, v: Vec3, material: &'a dyn Material) -> Self {
-        let aabb_diagonal1 = Aabb::new(q, q + u + v);
-        let aabb_diagonal2 = Aabb::new(q + u, q + v);
-        let aabb = aabb_diagonal1.expand(&aabb_diagonal2);
+        let bounds_diagonal1 = Aabb::new(q, q + u + v);
+        let bounds_diagonal2 = Aabb::new(q + u, q + v);
+        let bounds = bounds_diagonal1.expand(&bounds_diagonal2);
 
         let n = u.cross(&v);
         let normal = n.normalize();
@@ -39,7 +39,7 @@ impl<'a> Quad<'a> {
             v,
             w,
             material,
-            aabb,
+            bounds,
             normal,
             d,
         };
@@ -54,8 +54,8 @@ impl<'a> Quad<'a> {
 }
 
 impl Hittable for Quad<'_> {
-    fn aabb(&self) -> Aabb {
-        return self.aabb;
+    fn bounds(&self) -> Aabb {
+        return self.bounds;
     }
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
         let denominator = self.normal.dot(&ray.direction);
