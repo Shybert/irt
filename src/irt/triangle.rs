@@ -67,7 +67,7 @@ impl Hittable for Triangle<'_> {
         return Some(Hit::new(
             ray,
             ray.origin + ray.direction * t,
-            edge_2.cross(&edge_1),
+            edge_2.cross(&edge_1).normalize(),
             t,
             self.material,
             0.,
