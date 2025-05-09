@@ -28,10 +28,10 @@ impl<'a> Quad<'a> {
         let bounds_diagonal2 = Aabb::new(q + u, q + v);
         let bounds = bounds_diagonal1.expand(&bounds_diagonal2);
 
-        let n = u.cross(&v);
+        let n = u.cross(v);
         let normal = n.normalize();
-        let d = normal.dot(&q.into());
-        let w = n / n.dot(&n);
+        let d = normal.dot(q.into());
+        let w = n / n.dot(n);
 
         return Self {
             q,
@@ -58,14 +58,14 @@ impl Hittable for Quad<'_> {
         return self.bounds;
     }
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
-        let denominator = self.normal.dot(&ray.direction);
+        let denominator = self.normal.dot(ray.direction);
 
         // Return `None` if the ray is parallell to the plane.
         if denominator.abs() < 1e-8 {
             return None;
         }
 
-        let t = (self.d - self.normal.dot(&ray.origin.into())) / denominator;
+        let t = (self.d - self.normal.dot(ray.origin.into())) / denominator;
         if !t_interval.surrounds(t) {
             return None;
         }
@@ -73,8 +73,8 @@ impl Hittable for Quad<'_> {
         let point = ray.at(t);
 
         let relative_p = point - self.q;
-        let a = self.w.dot(&relative_p.cross(&self.v));
-        let b = self.w.dot(&self.u.cross(&relative_p));
+        let a = self.w.dot(relative_p.cross(self.v));
+        let b = self.w.dot(self.u.cross(relative_p));
         if !self.is_interior(a, b) {
             return None;
         }

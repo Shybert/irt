@@ -23,7 +23,7 @@ impl<'a> Hit<'a> {
         u: f32,
         v: f32,
     ) -> Self {
-        let front_face = ray.direction.dot(&outward_normal) < 0.;
+        let front_face = ray.direction.dot(outward_normal) < 0.;
         let normal = match front_face {
             true => outward_normal,
             false => -outward_normal,

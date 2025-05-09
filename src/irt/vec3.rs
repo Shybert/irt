@@ -13,26 +13,26 @@ impl Vec3 {
         return Vec3 { x, y, z };
     }
 
-    pub fn length_squared(&self) -> f32 {
+    pub fn length_squared(self) -> f32 {
         return self.x.powi(2) + self.y.powi(2) + self.z.powi(2);
     }
 
-    pub fn length(&self) -> f32 {
+    pub fn length(self) -> f32 {
         return self.length_squared().sqrt();
     }
 
-    pub fn normalize(&self) -> Self {
-        return *self / self.length();
+    pub fn normalize(self) -> Self {
+        return self / self.length();
     }
 
-    pub fn near_zero(&self) -> bool {
+    pub fn near_zero(self) -> bool {
         let threshold = 1e-8;
         return self.x.abs() < threshold && self.y.abs() < threshold && self.z.abs() < threshold;
     }
 
     /// Returns a vector where each element is the smallest of the corresponding elements from each
     /// input.
-    pub fn min(&self, other: &Self) -> Self {
+    pub fn min(self, other: Self) -> Self {
         return Self::new(
             self.x.min(other.x),
             self.y.min(other.y),
@@ -41,18 +41,18 @@ impl Vec3 {
     }
 
     /// Returns the smallest of the vector's components.
-    pub fn min_component(&self) -> f32 {
+    pub fn min_component(self) -> f32 {
         return self.x.min(self.y.min(self.z));
     }
 
     /// Returns the largest of the vector's components.
-    pub fn max_component(&self) -> f32 {
+    pub fn max_component(self) -> f32 {
         return self.x.max(self.y.max(self.z));
     }
 
     /// Returns a vector where each element is the largest of the corresponding elements from each
     /// input.
-    pub fn max(&self, other: &Self) -> Self {
+    pub fn max(self, other: Self) -> Self {
         return Self::new(
             self.x.max(other.x),
             self.y.max(other.y),
@@ -60,7 +60,7 @@ impl Vec3 {
         );
     }
 
-    pub fn longest_axis(&self) -> Axis {
+    pub fn longest_axis(self) -> Axis {
         if self.x > self.y {
             if self.x > self.z {
                 return Axis::X;
@@ -74,11 +74,11 @@ impl Vec3 {
         };
     }
 
-    pub fn dot(&self, other: &Self) -> f32 {
+    pub fn dot(self, other: Self) -> f32 {
         return self.x * other.x + self.y * other.y + self.z * other.z;
     }
 
-    pub fn cross(&self, other: &Self) -> Self {
+    pub fn cross(self, other: Self) -> Self {
         return Self::new(
             self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
@@ -86,17 +86,17 @@ impl Vec3 {
         );
     }
 
-    pub fn reflect(&self, other: &Self) -> Self {
-        return *self - 2. * self.dot(other) * *other;
+    pub fn reflect(self, other: Self) -> Self {
+        return self - 2. * self.dot(other) * other;
     }
 
-    pub fn refract(&self, normal: &Self, refractive_index_ratio: f32) -> Self {
+    pub fn refract(self, normal: Self, refractive_index_ratio: f32) -> Self {
         let cos_theta = self.dot(normal);
-        let a = refractive_index_ratio * *self;
+        let a = refractive_index_ratio * self;
         let b = refractive_index_ratio * cos_theta;
         let c = (1. - refractive_index_ratio.powi(2) * (1. - (cos_theta).powi(2))).sqrt();
 
-        return a - (b + c) * *normal;
+        return a - (b + c) * normal;
     }
 
     pub fn random() -> Self {
@@ -123,7 +123,7 @@ impl Vec3 {
         }
     }
 
-    pub fn random_on_hemisphere(normal: &Self) -> Self {
+    pub fn random_on_hemisphere(normal: Self) -> Self {
         let vector_on_unit_sphere = Self::random_unit_vector();
         if vector_on_unit_sphere.dot(normal) > 0. {
             return vector_on_unit_sphere;

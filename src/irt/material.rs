@@ -48,12 +48,12 @@ impl Metal {
 }
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
-        let mut reflected = ray_in.direction.reflect(&hit.normal);
+        let mut reflected = ray_in.direction.reflect(hit.normal);
         reflected = reflected.normalize() + (self.fuzz * Vec3::random_unit_vector());
 
         // Check whether the reflection has been fuzzed below the surface
         // If it has, have the surface absorb the ray
-        if reflected.dot(&hit.normal) <= 0. {
+        if reflected.dot(hit.normal) <= 0. {
             return None;
         }
 
@@ -86,13 +86,13 @@ impl Material for Dielectric {
         };
 
         let unit_in_direction = ray_in.direction.normalize();
-        let cos_theta = -unit_in_direction.dot(&hit.normal);
+        let cos_theta = -unit_in_direction.dot(hit.normal);
         let sin_theta = (1. - cos_theta.powi(2)).sqrt();
 
         let cannot_refract = refractive_index_ratio * sin_theta > 1.;
         let out_direction = match cannot_refract || self.reflectance(cos_theta) > random() {
-            true => unit_in_direction.reflect(&hit.normal),
-            false => unit_in_direction.refract(&hit.normal, refractive_index_ratio),
+            true => unit_in_direction.reflect(hit.normal),
+            false => unit_in_direction.refract(hit.normal, refractive_index_ratio),
         };
 
         return Some((Ray::new(hit.point, out_direction), Color::white()));

@@ -16,8 +16,8 @@ struct CameraBasis {
 impl CameraBasis {
     fn new(look_from: Point, look_at: Point, up: Vec3) -> Self {
         let w = (look_from - look_at).normalize();
-        let u = up.cross(&w).normalize();
-        let v = w.cross(&u).normalize();
+        let u = up.cross(w).normalize();
+        let v = w.cross(u).normalize();
 
         return Self { u, v, w };
     }

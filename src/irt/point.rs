@@ -18,7 +18,7 @@ impl Point {
 
     /// Returns a point where each element is the smallest of the corresponding elements from each
     /// input.
-    pub fn min(&self, other: &Self) -> Self {
+    pub fn min(self, other: Self) -> Self {
         return Self::new(
             self.x.min(other.x),
             self.y.min(other.y),
@@ -28,7 +28,7 @@ impl Point {
 
     /// Returns a point where each element is the largest of the corresponding elements from each
     /// input.
-    pub fn max(&self, other: &Self) -> Self {
+    pub fn max(self, other: Self) -> Self {
         return Self::new(
             self.x.max(other.x),
             self.y.max(other.y),

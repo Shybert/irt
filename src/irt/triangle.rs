@@ -12,7 +12,7 @@ pub struct Triangle<'a> {
 impl<'a> Triangle<'a> {
     pub fn new(a: Point, b: Point, c: Point, material: &'a dyn Material) -> Self {
         let centroid = (a + b + c) * (1. / 3.);
-        let bounds = Aabb::new(a.min(&b.min(&c)), a.max(&b.max(&c)));
+        let bounds = Aabb::new(a.min(b.min(c)), a.max(b.max(c)));
 
         return Triangle {
             a,
@@ -37,8 +37,8 @@ impl Hittable for Triangle<'_> {
         let edge_1 = self.b - self.a;
         let edge_2 = self.c - self.a;
 
-        let ray_cross_edge_2 = ray.direction.cross(&edge_2);
-        let det = edge_1.dot(&ray_cross_edge_2);
+        let ray_cross_edge_2 = ray.direction.cross(edge_2);
+        let det = edge_1.dot(ray_cross_edge_2);
 
         // Parallell ray
         if det > -0.0001 && det < 0.0001 {
@@ -47,18 +47,18 @@ impl Hittable for Triangle<'_> {
 
         let inverse_det = 1. / det;
         let s = ray.origin - self.a;
-        let u = inverse_det * s.dot(&ray_cross_edge_2);
+        let u = inverse_det * s.dot(ray_cross_edge_2);
         if !(0. ..=1.).contains(&u) {
             return None;
         }
 
-        let s_cross_edge_1 = s.cross(&edge_1);
-        let v = inverse_det * ray.direction.dot(&s_cross_edge_1);
+        let s_cross_edge_1 = s.cross(edge_1);
+        let v = inverse_det * ray.direction.dot(s_cross_edge_1);
         if v < 0. || u + v > 1. {
             return None;
         }
 
-        let t = inverse_det * edge_2.dot(&s_cross_edge_1);
+        let t = inverse_det * edge_2.dot(s_cross_edge_1);
         if !t_interval.surrounds(t) {
             return None;
         }
@@ -67,7 +67,7 @@ impl Hittable for Triangle<'_> {
         return Some(Hit::new(
             ray,
             ray.origin + ray.direction * t,
-            edge_2.cross(&edge_1).normalize(),
+            edge_2.cross(edge_1).normalize(),
             t,
             self.material,
             0.,

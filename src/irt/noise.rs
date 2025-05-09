@@ -30,7 +30,7 @@ impl Perlin {
         return Self { p: permutation };
     }
 
-    pub fn noise(&self, point: &Point) -> f32 {
+    pub fn noise(&self, point: Point) -> f32 {
         let cube_x = ((point.x.floor() as i32) & 255) as usize;
         let cube_y = ((point.y.floor() as i32) & 255) as usize;
         let cube_z = ((point.z.floor() as i32) & 255) as usize;

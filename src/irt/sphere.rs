@@ -23,7 +23,7 @@ impl<'a> Sphere<'a> {
         };
     }
 
-    pub fn uv_at(point: &Point) -> (f32, f32) {
+    pub fn uv_at(point: Point) -> (f32, f32) {
         let theta = (-point.y).acos();
         let phi = (-point.z).atan2(point.x) + PI;
 
@@ -36,7 +36,7 @@ impl Hittable for Sphere<'_> {
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
         let oc = self.center - ray.origin;
         let a = ray.direction.length_squared();
-        let h = ray.direction.dot(&oc);
+        let h = ray.direction.dot(oc);
         let c = oc.length_squared() - self.radius.powi(2);
 
         let discriminant = h.powi(2) - a * c;
@@ -57,7 +57,7 @@ impl Hittable for Sphere<'_> {
         t_interval.max = t;
         let point = ray.at(t);
         let outward_normal = (point - self.center) / self.radius;
-        let (u, v) = Sphere::uv_at(&outward_normal.into());
+        let (u, v) = Sphere::uv_at(outward_normal.into());
         return Some(Hit::new(ray, point, outward_normal, t, self.material, u, v));
     }
 

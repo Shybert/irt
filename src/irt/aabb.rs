@@ -38,11 +38,11 @@ impl Aabb {
     }
 
     pub fn expand(&self, other: &Self) -> Self {
-        return Self::new(self.min.min(&other.min), self.max.max(&other.max));
+        return Self::new(self.min.min(other.min), self.max.max(other.max));
     }
 
     #[allow(dead_code)]
-    pub fn expand_to_point(&mut self, point: &Point) {
+    pub fn expand_to_point(&mut self, point: Point) {
         self.min = self.min.min(point);
         self.max = self.max.max(point);
     }
@@ -52,8 +52,8 @@ impl Aabb {
         let t_0 = (self.min - ray.origin) * inverse_ray_direction;
         let t_1 = (self.max - ray.origin) * inverse_ray_direction;
 
-        let t_min = t_0.min(&t_1).max_component();
-        let t_max = t_0.max(&t_1).min_component();
+        let t_min = t_0.min(t_1).max_component();
+        let t_max = t_0.max(t_1).min_component();
 
         return t_interval.min.max(t_min) <= t_interval.max.min(t_max);
     }
