@@ -9,12 +9,7 @@ use std::{
 };
 
 fn basic_scene() {
-    let white_green_checker = CheckeredTexture::new(
-        0.4,
-        Box::new(Color::new(0.2, 0.3, 0.1)),
-        Box::new(Color::new(0.9, 0.9, 0.9)),
-    );
-    let material_ground = Lambertian::new(Box::new(white_green_checker));
+    let material_ground = Lambertian::new(Box::new(Color::new(0.8, 0.8, 0.)));
     let material_center = Lambertian::new(Box::new(Color::new(0.1, 0.2, 0.5)));
     let material_left = Dielectric::new(1.5);
     let material_bubble = Dielectric::new(1. / 1.5);
@@ -28,7 +23,6 @@ fn basic_scene() {
         Sphere::new(Point::new(1., 0., -1.), 0.5, &material_right),
     ];
 
-    // let look_from = Point::new(0., 0., 0.);
     let look_from = Point::new(-2., 2., 1.);
     let look_at = Point::new(0., 0., -1.);
     let up = Vec3::new(0., 1., 0.);
@@ -41,7 +35,7 @@ fn basic_scene() {
         look_at,
         up,
         100,
-        Box::new(Color::new(0.7, 0.8, 1.)),
+        Color::new(0.7, 0.8, 1.),
     );
 
     let bvh = Bvh::new(world);
@@ -72,7 +66,7 @@ fn checkered_spheres() {
         look_at,
         up,
         100,
-        Box::new(Color::new(0.7, 0.8, 1.)),
+        Color::new(0.7, 0.8, 1.),
     );
 
     let bvh = Bvh::new(world);
@@ -96,7 +90,7 @@ fn earth() {
         look_at,
         up,
         100,
-        Box::new(Color::new(0.7, 0.8, 1.)),
+        Color::new(0.7, 0.8, 1.),
     );
 
     let bvh = Bvh::new(world);
@@ -123,7 +117,7 @@ fn noise_scene() {
         look_at,
         up,
         100,
-        Box::new(Color::new(0.7, 0.8, 1.)),
+        Color::new(0.7, 0.8, 1.),
     );
 
     let bvh = Bvh::new(world);
@@ -184,7 +178,7 @@ fn quads() {
         look_at,
         up,
         100,
-        Box::new(Color::new(0.7, 0.8, 1.)),
+        Color::new(0.7, 0.8, 1.),
     );
 
     let bvh = Bvh::new(world);
@@ -219,7 +213,7 @@ fn simple_light() {
         look_at,
         up,
         100,
-        Box::new(Color::black()),
+        Color::black(),
     );
 
     let bvh = Bvh::new(world);
@@ -274,16 +268,7 @@ fn cornell_box() {
     let look_from = Point::new(278., 278., -800.);
     let look_at = Point::new(278., 278., 0.);
     let up = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(
-        1.,
-        40.,
-        600,
-        look_from,
-        look_at,
-        up,
-        200,
-        Box::new(Color::black()),
-    );
+    let camera = Camera::new(1., 40., 600, look_from, look_at, up, 200, Color::black());
 
     let bvh = Bvh::new(world);
     camera.render(&bvh);
@@ -344,7 +329,7 @@ fn scene_robot() {
         look_at,
         up,
         100,
-        Box::new(Color::new(0.7, 0.8, 1.)),
+        Color::new(0.7, 0.8, 1.),
     );
     camera.render(&bvh);
 }

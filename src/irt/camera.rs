@@ -39,7 +39,7 @@ pub struct Camera {
     samples_per_pixel: u32,
     pixel_samples_scale: f32,
     max_depth: u32,
-    background: Box<dyn Texture>,
+    background_color: Color,
 }
 impl Camera {
     pub fn new(
@@ -50,7 +50,7 @@ impl Camera {
         look_at: Point,
         up: Vec3,
         samples_per_pixel: u32,
-        background: Box<dyn Texture>,
+        background_color: Color,
     ) -> Self {
         // Image height should be at least 1
         let mut image_height = (image_width as f32 / aspect_ratio) as u32;
@@ -91,12 +91,12 @@ impl Camera {
             samples_per_pixel,
             pixel_samples_scale,
             max_depth: 10,
-            background,
+            background_color,
         };
     }
 
-    fn background_color(&self, ray: &Ray) -> Color {
-        return self.background.value(0., 0., Point::new(0., 0., 0.));
+    fn background_color(&self) -> Color {
+        return self.background_color;
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
@@ -106,7 +106,7 @@ impl Camera {
 
         let potential_hit = world.hit(ray, &mut Interval::new(0.001, f32::INFINITY));
         let Some(hit) = potential_hit else {
-            return self.background_color(ray);
+            return self.background_color();
         };
 
         let color_from_emission = hit.material.emitted(hit.u, hit.v, hit.point);
