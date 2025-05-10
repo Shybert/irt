@@ -1,6 +1,6 @@
 use rand::random;
 
-use crate::irt::{Color, Hit, Point, Ray, Texture, Vec3};
+use crate::irt::{Color, Hit, Point, Ray, Texture, UnitVec3};
 use std::fmt::Debug;
 
 pub trait Material: Debug + Sync {
@@ -23,7 +23,7 @@ impl Lambertian {
 }
 impl Material for Lambertian {
     fn scatter(&self, _ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
-        let mut scatter_direction = hit.normal.as_vec3() + Vec3::random_unit_vector().as_vec3();
+        let mut scatter_direction = hit.normal.as_vec3() + UnitVec3::random().as_vec3();
         if scatter_direction.near_zero() {
             scatter_direction = hit.normal.as_vec3();
         }
@@ -49,8 +49,7 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
         let mut reflected = ray_in.direction.reflect(hit.normal.as_vec3());
-        reflected =
-            reflected.normalize().as_vec3() + (self.fuzz * Vec3::random_unit_vector().as_vec3());
+        reflected = reflected.normalize().as_vec3() + (self.fuzz * UnitVec3::random().as_vec3());
 
         // Check whether the reflection has been fuzzed below the surface
         // If it has, have the surface absorb the ray

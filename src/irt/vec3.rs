@@ -113,24 +113,6 @@ impl Vec3 {
             rng.gen_range(interval.min..interval.max),
         );
     }
-
-    pub fn random_unit_vector() -> UnitVec3 {
-        loop {
-            let random_vector = Self::random_in_interval(&Interval::new(-1., 1.));
-            let length_squared = random_vector.length_squared();
-            if (1e-120..=1.).contains(&length_squared) {
-                return random_vector.normalize();
-            }
-        }
-    }
-
-    pub fn random_on_hemisphere(normal: UnitVec3) -> UnitVec3 {
-        let vector_on_unit_sphere = Self::random_unit_vector();
-        if vector_on_unit_sphere.as_vec3().dot(normal.as_vec3()) > 0. {
-            return vector_on_unit_sphere;
-        }
-        return -vector_on_unit_sphere;
-    }
 }
 impl PartialEq for Vec3 {
     fn eq(&self, other: &Self) -> bool {
@@ -219,6 +201,7 @@ impl UnitVec3 {
     pub fn new(vec3: Vec3) -> Self {
         return Self(vec3 / vec3.length());
     }
+
     /// Creates a [`UnitVec3`] without normalizing the input vector.
     /// Useful when the caller is certain that the input vector is of unit length.
     /// Panics in debug builds if the input is not of unit length.
@@ -229,6 +212,16 @@ impl UnitVec3 {
 
     pub fn as_vec3(self) -> Vec3 {
         return self.0;
+    }
+
+    pub fn random() -> Self {
+        loop {
+            let random_vector = Vec3::random_in_interval(&Interval::new(-1., 1.));
+            let length_squared = random_vector.length_squared();
+            if (1e-120..=1.).contains(&length_squared) {
+                return random_vector.normalize();
+            }
+        }
     }
 }
 impl Neg for UnitVec3 {
