@@ -1,6 +1,6 @@
 use crate::irt::{approx_equals, Axis, Interval, Point};
 use rand::prelude::*;
-use std::ops::{Add, Deref, Div, Index, Mul, Neg, Sub};
+use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {

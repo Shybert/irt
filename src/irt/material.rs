@@ -4,10 +4,10 @@ use crate::irt::{Color, Hit, Point, Ray, Texture, Vec3};
 use std::fmt::Debug;
 
 pub trait Material: Debug + Sync {
-    fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
+    fn scatter(&self, _ray_in: &Ray, _hit: &Hit) -> Option<(Ray, Color)> {
         return None;
     }
-    fn emitted(&self, u: f32, v: f32, point: Point) -> Color {
+    fn emitted(&self, _u: f32, _v: f32, _point: Point) -> Color {
         return Color::black();
     }
 }
@@ -49,7 +49,8 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit: &Hit) -> Option<(Ray, Color)> {
         let mut reflected = ray_in.direction.reflect(hit.normal.as_vec3());
-        reflected = reflected.normalize().as_vec3() + (self.fuzz * Vec3::random_unit_vector().as_vec3());
+        reflected =
+            reflected.normalize().as_vec3() + (self.fuzz * Vec3::random_unit_vector().as_vec3());
 
         // Check whether the reflection has been fuzzed below the surface
         // If it has, have the surface absorb the ray
