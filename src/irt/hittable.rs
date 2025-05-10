@@ -41,6 +41,7 @@ impl<'a> Hit<'a> {
 pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit>;
 
+    // TODO: Should this be defined to be in either local or world space?
     fn bounds(&self) -> Aabb;
 
     fn centroid(&self) -> Point {
