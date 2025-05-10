@@ -1,4 +1,4 @@
-use crate::irt::{Aabb, Hit, Hittable, Interval, Material, Point, Ray, Vec3};
+use crate::irt::{Aabb, Hit, Hittable, Interval, Material, Point, Ray, UnitVec3, Vec3};
 
 /// A quadrilateral (techinally a parallellogram).
 /// Defined by:
@@ -18,7 +18,7 @@ pub struct Quad<'a> {
     w: Vec3,
     material: &'a dyn Material,
     bounds: Aabb,
-    normal: Vec3,
+    normal: UnitVec3,
     /// The `d` in the general equation of a plane, pre-calculated
     d: f32,
 }
@@ -30,7 +30,7 @@ impl<'a> Quad<'a> {
 
         let n = u.cross(v);
         let normal = n.normalize();
-        let d = normal.dot(q.into());
+        let d = normal.as_vec3().dot(q.into());
         let w = n / n.dot(n);
 
         return Self {
@@ -58,14 +58,14 @@ impl Hittable for Quad<'_> {
         return self.bounds;
     }
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
-        let denominator = self.normal.dot(ray.direction);
+        let denominator = self.normal.as_vec3().dot(ray.direction);
 
         // Return `None` if the ray is parallell to the plane.
         if denominator.abs() < 1e-8 {
             return None;
         }
 
-        let t = (self.d - self.normal.dot(ray.origin.into())) / denominator;
+        let t = (self.d - self.normal.as_vec3().dot(ray.origin.into())) / denominator;
         if !t_interval.surrounds(t) {
             return None;
         }

@@ -56,8 +56,8 @@ impl Hittable for Sphere<'_> {
         let t = root;
         t_interval.max = t;
         let point = ray.at(t);
-        let outward_normal = (point - self.center) / self.radius;
-        let (u, v) = Sphere::uv_at(outward_normal.into());
+        let outward_normal = (point - self.center).normalize();
+        let (u, v) = Sphere::uv_at(outward_normal.as_vec3().into());
         return Some(Hit::new(ray, point, outward_normal, t, self.material, u, v));
     }
 

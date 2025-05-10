@@ -1,6 +1,6 @@
 use crate::irt::{approx_equals, Axis, Interval, Point};
 use rand::prelude::*;
-use std::ops::{Add, Div, Index, Mul, Neg, Sub};
+use std::ops::{Add, Deref, Div, Index, Mul, Neg, Sub};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -21,8 +21,9 @@ impl Vec3 {
         return self.length_squared().sqrt();
     }
 
-    pub fn normalize(self) -> Self {
-        return self / self.length();
+    /// Normalizes the vector, returning a [`UnitVec3`] guaranteed to be of unit length.
+    pub fn normalize(self) -> UnitVec3 {
+        return UnitVec3::new(self);
     }
 
     pub fn near_zero(self) -> bool {
@@ -113,7 +114,7 @@ impl Vec3 {
         );
     }
 
-    pub fn random_unit_vector() -> Self {
+    pub fn random_unit_vector() -> UnitVec3 {
         loop {
             let random_vector = Self::random_in_interval(&Interval::new(-1., 1.));
             let length_squared = random_vector.length_squared();
@@ -123,9 +124,9 @@ impl Vec3 {
         }
     }
 
-    pub fn random_on_hemisphere(normal: Self) -> Self {
+    pub fn random_on_hemisphere(normal: UnitVec3) -> UnitVec3 {
         let vector_on_unit_sphere = Self::random_unit_vector();
-        if vector_on_unit_sphere.dot(normal) > 0. {
+        if vector_on_unit_sphere.as_vec3().dot(normal.as_vec3()) > 0. {
             return vector_on_unit_sphere;
         }
         return -vector_on_unit_sphere;
@@ -208,5 +209,32 @@ impl Index<&Axis> for Vec3 {
             Axis::Y => &self.y,
             Axis::Z => &self.z,
         }
+    }
+}
+
+/// [`Vec3`] guaranteed to be of unit length.
+#[derive(Debug, Clone, Copy)]
+pub struct UnitVec3(Vec3);
+impl UnitVec3 {
+    pub fn new(vec3: Vec3) -> Self {
+        return Self(vec3 / vec3.length());
+    }
+    /// Creates a [`UnitVec3`] without normalizing the input vector.
+    /// Useful when the caller is certain that the input vector is of unit length.
+    /// Panics in debug builds if the input is not of unit length.
+    fn new_unchecked(vec3: Vec3) -> Self {
+        debug_assert!(approx_equals(vec3.length(), 1.));
+        return Self(vec3);
+    }
+
+    pub fn as_vec3(self) -> Vec3 {
+        return self.0;
+    }
+}
+impl Neg for UnitVec3 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        return Self::new_unchecked(-self.0);
     }
 }

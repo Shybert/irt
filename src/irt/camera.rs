@@ -2,22 +2,22 @@ use indicatif::ParallelProgressIterator;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::irt::{
-    degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Texture, Vec3,
+    degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Texture, UnitVec3,
+    Vec3,
 };
-use std::f32::consts::PI;
 use std::fs::File;
 use std::io::Write;
 
 struct CameraBasis {
-    u: Vec3,
-    v: Vec3,
-    w: Vec3,
+    u: UnitVec3,
+    v: UnitVec3,
+    w: UnitVec3,
 }
 impl CameraBasis {
     fn new(look_from: Point, look_at: Point, up: Vec3) -> Self {
         let w = (look_from - look_at).normalize();
-        let u = up.cross(w).normalize();
-        let v = w.cross(u).normalize();
+        let u = up.cross(w.as_vec3()).normalize();
+        let v = w.as_vec3().cross(u.as_vec3()).normalize();
 
         return Self { u, v, w };
     }
@@ -65,14 +65,14 @@ impl Camera {
         let viewport_height = 2. * h * focal_length;
         let viewport_width = viewport_height * ((image_width as f32) / image_height as f32);
 
-        let viewport_u = viewport_width * basis.u;
-        let viewport_v = viewport_height * -basis.v;
+        let viewport_u = viewport_width * basis.u.as_vec3();
+        let viewport_v = viewport_height * -basis.v.as_vec3();
 
         let pixel_delta_u = viewport_u / image_width as f32;
         let pixel_delta_v = viewport_v / image_height as f32;
 
         let viewport_upper_left =
-            center - (focal_length * basis.w) - viewport_u / 2. - viewport_v / 2.;
+            center - (focal_length * basis.w.as_vec3()) - viewport_u / 2. - viewport_v / 2.;
 
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 

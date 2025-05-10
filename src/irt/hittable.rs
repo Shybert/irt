@@ -1,11 +1,9 @@
-use crate::irt::{Aabb, Interval, Material, Point, Ray, Vec3};
+use crate::irt::{Aabb, Interval, Material, Point, Ray, UnitVec3, Vec3};
 
-/// A hit record. The normal is guaranteed to be of unit length.
 #[derive(Debug)]
 pub struct Hit<'a> {
     pub point: Point,
-    /// Guaranteed to be of unit length.
-    pub normal: Vec3,
+    pub normal: UnitVec3,
     pub t: f32,
     pub front_face: bool,
     pub material: &'a dyn Material,
@@ -13,17 +11,16 @@ pub struct Hit<'a> {
     pub v: f32,
 }
 impl<'a> Hit<'a> {
-    /// Create a new hit record. The normal must be of unit length.
     pub fn new(
         ray: &Ray,
         point: Point,
-        outward_normal: Vec3,
+        outward_normal: UnitVec3,
         t: f32,
         material: &'a dyn Material,
         u: f32,
         v: f32,
     ) -> Self {
-        let front_face = ray.direction.dot(outward_normal) < 0.;
+        let front_face = ray.direction.dot(outward_normal.as_vec3()) < 0.;
         let normal = match front_face {
             true => outward_normal,
             false => -outward_normal,
