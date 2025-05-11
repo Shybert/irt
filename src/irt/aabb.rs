@@ -1,3 +1,5 @@
+use std::ops::{Add, AddAssign};
+
 use crate::irt::{Axis, Interval, Point, Ray, Vec3};
 
 /// Struct for an axis-aligned bounding box
@@ -37,10 +39,6 @@ impl Aabb {
         return self.max - self.min;
     }
 
-    pub fn expand(&self, other: &Self) -> Self {
-        return Self::new(self.min.min(other.min), self.max.max(other.max));
-    }
-
     #[allow(dead_code)]
     pub fn expand_to_point(&mut self, point: Point) {
         self.min = self.min.min(point);
@@ -61,5 +59,19 @@ impl Aabb {
     pub fn area(&self) -> f32 {
         let extent = self.extent();
         return 2. * (extent.x * extent.y + extent.y * extent.z + extent.z * extent.x);
+    }
+}
+
+impl Add for Aabb {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        return Self::new(self.min.min(other.min), self.max.max(other.max));
+    }
+}
+impl AddAssign for Aabb {
+    fn add_assign(&mut self, other: Self) {
+        self.min = self.min.min(other.min);
+        self.max = self.max.max(other.max);
     }
 }

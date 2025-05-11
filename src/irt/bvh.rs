@@ -43,7 +43,7 @@ impl<T: Hittable> Bvh<T> {
         let node = &self.nodes[node_index];
         self.nodes[node_index].bounds = match children {
             None => self.hittables[node.hittable_range()].bounds(),
-            Some((left_child, right_child)) => left_child.bounds.expand(&right_child.bounds),
+            Some((left_child, right_child)) => left_child.bounds + right_child.bounds,
         };
     }
 
@@ -84,10 +84,10 @@ impl<T: Hittable> Bvh<T> {
         for hittable in hittables {
             if hittable.centroid()[axis] < position {
                 left_count += 1.;
-                left_box = left_box.expand(&hittable.bounds());
+                left_box += hittable.bounds();
             } else {
                 right_count += 1.;
-                right_box = right_box.expand(&hittable.bounds());
+                right_box += hittable.bounds();
             }
         }
 

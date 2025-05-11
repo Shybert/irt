@@ -26,7 +26,7 @@ impl<'a> Quad<'a> {
     pub fn new(q: Point, u: Vec3, v: Vec3, material: &'a dyn Material) -> Self {
         let bounds_diagonal1 = Aabb::new(q, q + u + v);
         let bounds_diagonal2 = Aabb::new(q + u, q + v);
-        let bounds = bounds_diagonal1.expand(&bounds_diagonal2);
+        let bounds = bounds_diagonal1 + bounds_diagonal2;
 
         let n = u.cross(v);
         let normal = n.normalize();

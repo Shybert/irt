@@ -58,9 +58,9 @@ impl<T: Hittable> Hittable for [T] {
     }
 
     fn bounds(&self) -> Aabb {
-        return self.iter().fold(Aabb::empty(), |bounds, hittable| {
-            bounds.expand(&hittable.bounds())
-        });
+        return self
+            .iter()
+            .fold(Aabb::empty(), |bounds, hittable| bounds + hittable.bounds());
     }
 }
 
