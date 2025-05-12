@@ -8,13 +8,19 @@ pub struct Point {
     pub z: f32,
 }
 impl Point {
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
         return Point { x, y, z };
     }
 
     pub fn random() -> Self {
         return Self::new(rand::random(), rand::random(), rand::random());
     }
+
+    /// `Point` at infinity (∞).
+    pub const INFINITY: Self = Point::new(f32::INFINITY, f32::INFINITY, f32::INFINITY);
+    /// `Point` at negative infinity (-∞).
+    pub const NEG_INFINITY: Self =
+        Point::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
 
     /// Returns a point where each element is the smallest of the corresponding elements from each
     /// input.
