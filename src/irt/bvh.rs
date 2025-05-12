@@ -232,24 +232,37 @@ impl<T: Hittable> Hittable for Bvh<T> {
 
 pub struct BVHInstance<'a, T: Hittable> {
     bvh: &'a Bvh<T>,
+    /// Object-to-world
+    transform: Matrix,
+    /// World-to-object
     inverse_transform: Matrix,
+    /// Bounds in world space. Primarily used for building a TLAS
+    bounds: Aabb,
 }
 impl<'a, T: Hittable> BVHInstance<'a, T> {
+    /// Creates a new BVH instance from a BVH and an object-to-world transform.
     pub fn new(bvh: &'a Bvh<T>, transform: Matrix) -> Self {
         return Self {
             bvh,
+            transform,
             inverse_transform: transform.inverse(),
+            bounds: transform * bvh.bounds(),
         };
     }
 }
 
 impl<T: Hittable> Hittable for BVHInstance<'_, T> {
     fn bounds(&self) -> Aabb {
-        return self.bvh.bounds();
-    }
+        return self.bounds;
     }
 
     fn hit(&self, ray: &Ray, t_interval: &mut Interval) -> Option<Hit> {
-        return self.bvh.hit(&(self.inverse_transform * *ray), t_interval);
+        let mut hit = self.bvh.hit(&(self.inverse_transform * *ray), t_interval)?;
+
+        // The hit is in object space and must therefore be transformed to world space
+        hit.point = self.transform * hit.point;
+        hit.normal = (self.inverse_transform.transpose() * hit.normal.as_vec3()).normalize();
+
+        return Some(hit);
     }
 }

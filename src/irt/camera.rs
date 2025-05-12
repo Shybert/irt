@@ -2,7 +2,7 @@ use indicatif::ParallelProgressIterator;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::irt::{
-    degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, Texture, UnitVec3,
+    degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, UnitVec3,
     Vec3,
 };
 use std::fs::File;

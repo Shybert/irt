@@ -2,6 +2,7 @@ mod irt;
 use irt::*;
 
 use std::{
+    f32::consts::PI,
     fs::File,
     io::{BufRead, BufReader},
     rc::Rc,
@@ -334,11 +335,43 @@ fn scene_robot() {
     camera.render(&bvh);
 }
 
+fn armadillos() {
+    let material = Rc::new(Lambertian::new(Box::new(Color::new(0.8, 0.8, 0.))));
+    let triangles = read_file("assets/armadillo.tri", material.as_ref());
+
+    let look_from = Point::new(0., 0., -8.);
+    let look_at = Point::new(0., 0., -1.);
+    let up = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(
+        16. / 9.,
+        30.,
+        400,
+        look_from,
+        look_at,
+        up,
+        100,
+        Color::new(0.7, 0.8, 1.),
+    );
+
+    let bvh = Bvh::new(triangles);
+    let bvh_instance = BVHInstance::new(
+        &bvh,
+        Matrix::identity().scale(0.3, 2., 1.).translate(-2., 0., 0.),
+    );
+    let bvh_instance2 = BVHInstance::new(&bvh, Matrix::identity().translate(2., 0., 0.));
+    let bvh_instance3 = BVHInstance::new(&bvh, Matrix::identity().rotate_y(-PI / 4.));
+    // let tlas = Bvh::new(vec![bvh_instance, bvh_instance2, bvh_instance3]);
+    // let tlas = Bvh::new(vec![bvh_instance3]);
+    let tlas = Bvh::new(vec![bvh_instance, bvh_instance2, bvh_instance3]);
+    camera.render(&tlas);
+    // camera.render(&bvh_instance2);
+}
+
 fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 8;
+    let scene = 9;
     match scene {
         1 => basic_scene(),
         2 => scene_robot(),
@@ -348,6 +381,7 @@ fn main() {
         6 => quads(),
         7 => simple_light(),
         8 => cornell_box(),
+        9 => armadillos(),
         _ => basic_scene(),
     }
 
