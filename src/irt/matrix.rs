@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut, Mul};
 
-use crate::irt::{approx_equals, Point, Ray, Vec3};
+use crate::irt::{approx_equals, Aabb, Point, Ray, Vec3};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Matrix {
@@ -192,12 +192,29 @@ impl Mul<Point> for Matrix {
         );
     }
 }
-
 impl Mul<Ray> for Matrix {
     type Output = Ray;
 
     fn mul(self, ray: Ray) -> Ray {
         return Ray::new(self * ray.origin, self * ray.direction);
+    }
+}
+impl Mul<Aabb> for Matrix {
+    type Output = Aabb;
+
+    fn mul(self, bounds: Aabb) -> Aabb {
+        // Transforming only the min and max points is not correct because
+        // the box is treated as being axis-aligned. Transformations that aren't
+        // axis-aligned will thus break this invariant (e.g. a 45° rotation).
+        let (new_min, new_max) = bounds
+            .corners()
+            .into_iter()
+            .map(|corner| self * corner)
+            .fold(
+                (Point::INFINITY, Point::NEG_INFINITY),
+                |(min, max), corner| (min.min(corner), max.max(corner)),
+            );
+        return Aabb::new(new_min, new_max);
     }
 }
 

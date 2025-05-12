@@ -33,6 +33,20 @@ impl Aabb {
         );
     }
 
+    /// Returns an array of the 8 corners that form the AABB.
+    pub fn corners(&self) -> [Point; 8] {
+        return [
+            self.min,
+            Point::new(self.min.x, self.min.y, self.max.z),
+            Point::new(self.min.x, self.max.y, self.min.z),
+            Point::new(self.max.x, self.min.y, self.min.z),
+            Point::new(self.min.x, self.max.y, self.max.z),
+            Point::new(self.max.x, self.min.y, self.max.z),
+            Point::new(self.max.x, self.max.y, self.min.z),
+            self.max,
+        ];
+    }
+
     /// Returns the extent of the AABB,
     /// i.e. its length in the X, Y, and Z directions.
     pub fn extent(&self) -> Vec3 {
