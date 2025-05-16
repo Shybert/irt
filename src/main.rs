@@ -2,7 +2,6 @@ mod irt;
 use irt::*;
 
 use std::{
-    f32::consts::PI,
     fs::File,
     io::{BufRead, BufReader},
     rc::Rc,
@@ -30,7 +29,7 @@ fn basic_scene() {
 
     let camera = Camera::new(
         16. / 9.,
-        30.,
+        Degrees(30.),
         400,
         look_from,
         look_at,
@@ -61,7 +60,7 @@ fn checkered_spheres() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         16. / 9.,
-        20.,
+        Degrees(20.),
         400,
         look_from,
         look_at,
@@ -85,7 +84,7 @@ fn earth() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         16. / 9.,
-        20.,
+        Degrees(20.),
         400,
         look_from,
         look_at,
@@ -112,7 +111,7 @@ fn noise_scene() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         16. / 9.,
-        20.,
+        Degrees(20.),
         400,
         look_from,
         look_at,
@@ -173,7 +172,7 @@ fn quads() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         1.,
-        80.,
+        Degrees(80.),
         400,
         look_from,
         look_at,
@@ -208,7 +207,7 @@ fn simple_light() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         16. / 9.,
-        20.,
+        Degrees(20.),
         400,
         look_from,
         look_at,
@@ -269,7 +268,16 @@ fn cornell_box() {
     let look_from = Point::new(278., 278., -800.);
     let look_at = Point::new(278., 278., 0.);
     let up = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(1., 40., 600, look_from, look_at, up, 200, Color::black());
+    let camera = Camera::new(
+        1.,
+        Degrees(40.),
+        600,
+        look_from,
+        look_at,
+        up,
+        200,
+        Color::black(),
+    );
 
     let bvh = Bvh::new(world);
     camera.render(&bvh);
@@ -324,7 +332,7 @@ fn scene_robot() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         16. / 9.,
-        30.,
+        Degrees(30.),
         400,
         look_from,
         look_at,
@@ -344,7 +352,7 @@ fn armadillos() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         16. / 9.,
-        30.,
+        Degrees(30.),
         400,
         look_from,
         look_at,
@@ -359,7 +367,7 @@ fn armadillos() {
         Matrix::identity().scale(0.3, 2., 1.).translate(-2., 0., 0.),
     );
     let bvh_instance2 = BVHInstance::new(&bvh, Matrix::identity().translate(2., 0., 0.));
-    let bvh_instance3 = BVHInstance::new(&bvh, Matrix::identity().rotate_y(-PI / 4.));
+    let bvh_instance3 = BVHInstance::new(&bvh, Matrix::identity().rotate_y(Degrees(-45.)));
     // let tlas = Bvh::new(vec![bvh_instance, bvh_instance2, bvh_instance3]);
     // let tlas = Bvh::new(vec![bvh_instance3]);
     let tlas = Bvh::new(vec![bvh_instance, bvh_instance2, bvh_instance3]);

@@ -1,10 +1,7 @@
 use indicatif::ParallelProgressIterator;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-use crate::irt::{
-    degrees_to_radians, linear_to_gamma, Color, Hittable, Interval, Point, Ray, UnitVec3,
-    Vec3,
-};
+use crate::irt::{linear_to_gamma, Color, Degrees, Hittable, Interval, Point, Ray, UnitVec3, Vec3};
 use std::fs::File;
 use std::io::Write;
 
@@ -29,7 +26,7 @@ pub struct Camera {
     image_width: u32,
     image_height: u32,
     #[allow(dead_code)]
-    vertical_fov: f32,
+    vertical_fov: Degrees,
     center: Point,
     #[allow(dead_code)]
     basis: CameraBasis,
@@ -44,7 +41,7 @@ pub struct Camera {
 impl Camera {
     pub fn new(
         aspect_ratio: f32,
-        vertical_fov: f32,
+        vertical_fov: Degrees,
         image_width: u32,
         look_from: Point,
         look_at: Point,
@@ -60,8 +57,8 @@ impl Camera {
         let basis = CameraBasis::new(look_from, look_at, up);
         let center = look_from;
 
-        let theta = degrees_to_radians(vertical_fov);
-        let h = f32::tan(theta / 2.);
+        let theta = vertical_fov.to_radians().as_f32();
+        let h = (theta / 2.).tan();
         let viewport_height = 2. * h * focal_length;
         let viewport_width = viewport_height * ((image_width as f32) / image_height as f32);
 

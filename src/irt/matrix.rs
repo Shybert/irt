@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut, Mul};
 
-use crate::irt::{approx_equals, Aabb, Point, Ray, Vec3};
+use crate::irt::{approx_equals, Aabb, Degrees, Point, Ray, Vec3};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Matrix {
@@ -94,8 +94,8 @@ impl Matrix {
         return scaling * self;
     }
 
-    pub fn rotate_x(self, angle: f32) -> Self {
-        let (angle_sin, angle_cos) = angle.sin_cos();
+    pub fn rotate_x(self, angle: Degrees) -> Self {
+        let (angle_sin, angle_cos) = angle.to_radians().as_f32().sin_cos();
         let rotation = Self::new([
             [1., 0., 0., 0.],
             [0., angle_cos, -angle_sin, 0.],
@@ -106,8 +106,8 @@ impl Matrix {
         return rotation * self;
     }
 
-    pub fn rotate_y(self, angle: f32) -> Self {
-        let (angle_sin, angle_cos) = angle.sin_cos();
+    pub fn rotate_y(self, angle: Degrees) -> Self {
+        let (angle_sin, angle_cos) = angle.to_radians().as_f32().sin_cos();
         let rotation = Self::new([
             [angle_cos, 0., angle_sin, 0.],
             [0., 1., 0., 0.],
@@ -118,8 +118,8 @@ impl Matrix {
         return rotation * self;
     }
 
-    pub fn rotate_z(self, angle: f32) -> Self {
-        let (angle_sin, angle_cos) = angle.sin_cos();
+    pub fn rotate_z(self, angle: Degrees) -> Self {
+        let (angle_sin, angle_cos) = angle.to_radians().as_f32().sin_cos();
         let rotation = Self::new([
             [angle_cos, -angle_sin, 0., 0.],
             [angle_sin, angle_cos, 0., 0.],
@@ -220,7 +220,7 @@ impl Mul<Aabb> for Matrix {
 
 #[cfg(test)]
 mod tests {
-    use std::f32::consts::{PI, SQRT_2};
+    use std::f32::consts::SQRT_2;
 
     use super::*;
 
@@ -555,8 +555,8 @@ mod tests {
     #[test]
     fn rotate_x() {
         let point = Point::new(0., 1., 0.);
-        let quarter_rotation = Matrix::identity().rotate_x(PI / 4.);
-        let half_rotation = Matrix::identity().rotate_x(PI / 2.);
+        let quarter_rotation = Matrix::identity().rotate_x(Degrees(45.));
+        let half_rotation = Matrix::identity().rotate_x(Degrees(90.));
 
         assert_eq!(
             quarter_rotation * point,
@@ -568,15 +568,15 @@ mod tests {
     #[test]
     fn rotate_x_inverse_rotates_in_reverse() {
         let point = Point::new(0., 1., 0.);
-        let half_rotation = Matrix::identity().rotate_x(PI / 2.);
+        let half_rotation = Matrix::identity().rotate_x(Degrees(90.));
         assert_eq!(half_rotation.inverse() * point, Point::new(0., 0., -1.,));
     }
 
     #[test]
     fn rotate_y() {
         let point = Point::new(0., 0., 1.);
-        let quarter_rotation = Matrix::identity().rotate_y(PI / 4.);
-        let half_rotation = Matrix::identity().rotate_y(PI / 2.);
+        let quarter_rotation = Matrix::identity().rotate_y(Degrees(45.));
+        let half_rotation = Matrix::identity().rotate_y(Degrees(90.));
 
         assert_eq!(
             quarter_rotation * point,
@@ -588,15 +588,15 @@ mod tests {
     #[test]
     fn rotate_y_inverse_rotates_in_reverse() {
         let point = Point::new(0., 0., 1.);
-        let half_rotation = Matrix::identity().rotate_y(PI / 2.);
+        let half_rotation = Matrix::identity().rotate_y(Degrees(90.));
         assert_eq!(half_rotation.inverse() * point, Point::new(-1., 0., 0.,));
     }
 
     #[test]
     fn rotate_z() {
         let point = Point::new(1., 0., 0.);
-        let quarter_rotation = Matrix::identity().rotate_z(PI / 4.);
-        let half_rotation = Matrix::identity().rotate_z(PI / 2.);
+        let quarter_rotation = Matrix::identity().rotate_z(Degrees(45.));
+        let half_rotation = Matrix::identity().rotate_z(Degrees(90.));
 
         assert_eq!(
             quarter_rotation * point,
@@ -608,7 +608,7 @@ mod tests {
     #[test]
     fn rotate_z_inverse_rotates_in_reverse() {
         let point = Point::new(1., 0., 0.);
-        let half_rotation = Matrix::identity().rotate_z(PI / 2.);
+        let half_rotation = Matrix::identity().rotate_z(Degrees(90.));
         assert_eq!(half_rotation.inverse() * point, Point::new(0., -1., 0.,));
     }
 
@@ -616,7 +616,7 @@ mod tests {
     fn chained_transformations() {
         let point = Point::new(1., 0., 1.);
         let transform = Matrix::identity()
-            .rotate_x(PI / 2.)
+            .rotate_x(Degrees(90.))
             .scale(5., 5., 5.)
             .translate(10., 5., 7.);
 
