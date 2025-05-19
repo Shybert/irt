@@ -45,6 +45,25 @@ impl<'a> Quad<'a> {
         };
     }
 
+    /// Returns a 1x1x1 cube with corners in (0, 0, 0) and (1, 1, 1).
+    pub fn cube(material: &'a dyn Material) -> Vec<Self> {
+        let min = Point::new(0., 0., 0.);
+        let max = Point::new(1., 1., 1.);
+
+        let dx = Vec3::new(max.x - min.x, 0., 0.);
+        let dy = Vec3::new(0., max.y - min.y, 0.);
+        let dz = Vec3::new(0., 0., max.z - min.z);
+
+        return vec![
+            Quad::new(Point::new(min.x, min.y, max.z), dx, dy, material),
+            Quad::new(Point::new(max.x, min.y, max.z), -dz, dy, material),
+            Quad::new(Point::new(max.x, min.y, min.z), -dx, dy, material),
+            Quad::new(Point::new(min.x, min.y, min.z), dz, dy, material),
+            Quad::new(Point::new(min.x, max.y, max.z), dx, -dz, material),
+            Quad::new(Point::new(min.x, min.y, min.z), dx, dz, material),
+        ];
+    }
+
     /// Given a hit point in the planar coordinates `a` and `b`,
     /// returns whether the point is inside the quadrilateral.
     fn is_interior(&self, a: f32, b: f32) -> bool {

@@ -226,7 +226,7 @@ fn cornell_box() {
     let white = Lambertian::new(Box::new(Color::new(0.73, 0.73, 0.73)));
     let light = DiffuseLight::new(Box::new(Color::new(15., 15., 15.)));
 
-    let world = vec![
+    let outer_box = Bvh::new(vec![
         Quad::new(
             Point::new(555., 0., 0.),
             Vec3::new(0., 555., 0.),
@@ -263,7 +263,24 @@ fn cornell_box() {
             Vec3::new(0., 555., 0.),
             &white,
         ),
-    ];
+    ]);
+    let outer_box_instance = BVHInstance::new(&outer_box, Matrix::identity());
+
+    let cube = Bvh::new(Quad::cube(&white));
+    let box1_instance = BVHInstance::new(
+        &cube,
+        Matrix::identity()
+            .scale(165., 330., 165.)
+            .translate(150., 0., 370.)
+            .rotate_y(Degrees(15.)),
+    );
+    let box2_instance = BVHInstance::new(
+        &cube,
+        Matrix::identity()
+            .scale(165., 165., 165.)
+            .translate(160., 0., 65.)
+            .rotate_y(Degrees(-18.)),
+    );
 
     let look_from = Point::new(278., 278., -800.);
     let look_at = Point::new(278., 278., 0.);
@@ -279,8 +296,11 @@ fn cornell_box() {
         Color::black(),
     );
 
-    let bvh = Bvh::new(world);
-    camera.render(&bvh);
+    camera.render(&Bvh::new(vec![
+        outer_box_instance,
+        box1_instance,
+        box2_instance,
+    ]));
 }
 
 fn parse_triangle<'a>(line: &str, material: &'a dyn Material) -> Triangle<'a> {
@@ -379,7 +399,7 @@ fn main() {
     println!("Hello, world!");
     let start_time = Instant::now();
 
-    let scene = 9;
+    let scene = 8;
     match scene {
         1 => basic_scene(),
         2 => scene_robot(),
