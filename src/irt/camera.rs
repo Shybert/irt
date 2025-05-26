@@ -34,6 +34,10 @@ pub struct Camera {
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
     samples_per_pixel: u32,
+    /// The reciprocal of `samples_per_pixel`.
+    ///
+    /// The final pixel color must be divided
+    /// by the number of times the pixel is sampled.
     pixel_samples_scale: f32,
     max_depth: u32,
     background_color: Color,
