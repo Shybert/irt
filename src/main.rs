@@ -1,5 +1,11 @@
 mod irt;
 use irt::*;
+use winit::{
+    application::ApplicationHandler,
+    event::WindowEvent,
+    event_loop::{ControlFlow, EventLoop},
+    window::Window,
+};
 
 use std::{
     fs::File,
@@ -395,23 +401,68 @@ fn armadillos() {
     // camera.render(&bvh_instance2);
 }
 
-fn main() {
-    println!("Hello, world!");
-    let start_time = Instant::now();
+#[derive(Default)]
+struct App {
+    window: Option<Window>,
+}
 
-    let scene = 8;
-    match scene {
-        1 => basic_scene(),
-        2 => scene_robot(),
-        3 => checkered_spheres(),
-        4 => earth(),
-        5 => noise_scene(),
-        6 => quads(),
-        7 => simple_light(),
-        8 => cornell_box(),
-        9 => armadillos(),
-        _ => basic_scene(),
+impl ApplicationHandler for App {
+    fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+        self.window = Some(
+            event_loop
+                .create_window(Window::default_attributes().with_title("Path tracing"))
+                .unwrap(),
+        )
     }
 
-    println!("Wall time: {:.1} s", start_time.elapsed().as_secs_f64());
+    fn window_event(
+        &mut self,
+        event_loop: &winit::event_loop::ActiveEventLoop,
+        window_id: winit::window::WindowId,
+        event: winit::event::WindowEvent,
+    ) {
+        match event {
+            WindowEvent::CloseRequested => {
+                println!("Window closing");
+                event_loop.exit();
+            }
+            WindowEvent::RedrawRequested => {
+                self.window.as_ref().unwrap().request_redraw();
+            }
+            _ => (),
+        }
+    }
+}
+
+fn main() {
+    // println!("Hello, world!");
+    // let start_time = Instant::now();
+    //
+    // let scene = 6;
+    // match scene {
+    //     1 => basic_scene(),
+    //     2 => scene_robot(),
+    //     3 => checkered_spheres(),
+    //     4 => earth(),
+    //     5 => noise_scene(),
+    //     6 => quads(),
+    //     7 => simple_light(),
+    //     8 => cornell_box(),
+    //     9 => armadillos(),
+    //     // 10 => skybox(),
+    //     _ => basic_scene(),
+    // }
+    //
+    // println!("Wall time: {:.1} s", start_time.elapsed().as_secs_f64());
+
+    println!("Time for window");
+
+    let event_loop = EventLoop::new().unwrap();
+    // let window_attributes = Window::default_attributes().with_title("Path tracing");
+    // let window = event_loop.create_window(window_attributes);
+    //
+    event_loop.set_control_flow(ControlFlow::Wait);
+
+    let mut app = App::default();
+    event_loop.run_app(&mut app).unwrap();
 }
