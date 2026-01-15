@@ -1,11 +1,14 @@
 use image::{ImageReader, Pixel, Rgba32FImage};
 use indicatif::ParallelProgressIterator;
+use pixels::Pixels;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use winit::window::Window;
 
 use crate::irt::{linear_to_gamma, Color, Degrees, Hittable, Interval, Point, Ray, UnitVec3, Vec3};
 use std::f32::consts::{FRAC_1_PI, FRAC_2_PI, PI};
 use std::fs::File;
 use std::io::Write;
+use std::sync::Arc;
 
 struct CameraBasis {
     u: UnitVec3,
@@ -256,5 +259,45 @@ impl Camera {
         });
 
         println!("Print finished.");
+    }
+
+    pub fn render2(
+        &self,
+        world: &impl Hittable,
+        pixels: &mut Pixels<'static>,
+        // window: Option<Arc<Window>>,
+    ) {
+        let mut image_file = File::create("image.ppm").expect("Could not create image file.");
+        writeln!(
+            image_file,
+            "P3\n{} {}\n255\n",
+            self.image_width, self.image_height
+        )
+        .unwrap();
+
+        let canvas: Vec<Color> = (0..self.image_height * self.image_width)
+            .into_par_iter()
+            .progress_count((self.image_width * self.image_height).into())
+            .map(|index| self.coords_from_index(index))
+            .map(|(x, y)| self.sample_pixel(world, (x, y)))
+            .collect();
+
+        for (pixel, color) in pixels.frame_mut().chunks_exact_mut(4).zip(canvas.iter()) {
+            let r = linear_to_gamma(color.r);
+            let g = linear_to_gamma(color.g);
+            let b = linear_to_gamma(color.b);
+
+            let intensity = Interval::new(0., 0.999);
+            let ir = (intensity.clamp(r) * 256.) as u8;
+            let ig = (intensity.clamp(g) * 256.) as u8;
+            let ib = (intensity.clamp(b) * 256.) as u8;
+
+            pixel[0] = ir;
+            pixel[1] = ig;
+            pixel[2] = ib;
+            pixel[3] = 0xFF;
+        }
+
+        // println!("Print finished.");
     }
 }
