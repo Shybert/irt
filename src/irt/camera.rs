@@ -1,7 +1,9 @@
+use image::{ImageReader, Pixel, Rgba32FImage};
 use indicatif::ParallelProgressIterator;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::irt::{linear_to_gamma, Color, Degrees, Hittable, Interval, Point, Ray, UnitVec3, Vec3};
+use std::f32::consts::{FRAC_1_PI, FRAC_2_PI, PI};
 use std::fs::File;
 use std::io::Write;
 
@@ -41,6 +43,10 @@ pub struct Camera {
     pixel_samples_scale: f32,
     max_depth: u32,
     background_color: Color,
+    skybox_width: u32,
+    skybox_height: u32,
+    skybox_buffer: Rgba32FImage,
+    // skybox_raw: Vec<f32>,
 }
 impl Camera {
     pub fn new(
@@ -79,6 +85,22 @@ impl Camera {
 
         let pixel_samples_scale = 1. / samples_per_pixel as f32;
 
+        let img = ImageReader::open("assets/skybox.hdr")
+            .unwrap()
+            .decode()
+            .unwrap();
+        let skybox_width = img.width();
+        let skybox_height = img.height();
+        let skybox_buffer = img.into_rgba32f();
+        // let skybox_raw = skybox_buffer.into_raw();
+
+        // println!(
+        //     "Width, Height: ({}, {}), Buffer length: {}",
+        //     skybox_width,
+        //     skybox_height,
+        //     skybox_buffer.len()
+        // );
+
         return Self {
             aspect_ratio,
             image_width,
@@ -93,11 +115,58 @@ impl Camera {
             pixel_samples_scale,
             max_depth: 10,
             background_color,
+            skybox_width,
+            skybox_height,
+            // skybox_raw,
+            skybox_buffer,
         };
     }
 
     fn background_color(&self) -> Color {
         return self.background_color;
+    }
+
+    fn skybox(&self, ray: &Ray) -> Color {
+        // let u = self.skybox_width as f32 * ray.direction.z.atan2(ray.direction.x) * FRAC_2_PI - 0.5;
+        // let v = self.skybox_height as f32 * ray.direction.y.acos() * FRAC_1_PI - 0.5;
+        // let index =
+        //     (u + v * self.skybox_width as f32) % (self.skybox_width * self.skybox_height) as f32;
+
+        let azimuth = ray.direction.z.atan2(ray.direction.x);
+        let elevation = ray
+            .direction
+            .y
+            .atan2((ray.direction.x.powi(2) + ray.direction.z.powi(2)).sqrt());
+
+        let u = (azimuth + PI) / (2. * PI);
+        let v = (elevation + PI) / (2. * PI);
+
+        // let x = u * self.skybox_width as f32;
+        // let y = v * self.skybox_height as f32;
+        // let pixel = self.skybox_buffer.get_pixel(x as u32, y as u32);
+        // let rgb = pixel.to_rgb();
+        // let channels = rgb.channels();
+
+        // let pixel = self
+        //     .skybox_buffer
+        //     .get_pixel(u as u32 % self.skybox_width, v as u32 % self.skybox_height);
+        // let rgb = pixel.to_rgb();
+        // let channels = rgb.channels();
+
+        let x = (u * self.skybox_width as f32) as u32;
+        let y = ((1. - v) * self.skybox_height as f32) as u32;
+
+        let pixel = self.skybox_buffer.get_pixel(x, y);
+        let rgb = pixel.to_rgb();
+        let channels = rgb.channels();
+
+        return 0.65 * Color::new(channels[0], channels[1], channels[2]);
+        // return 0.65
+        //     * Color::new(
+        //         self.skybox_raw[index as usize * 3],
+        //         self.skybox_raw[index as usize * 3 + 1],
+        //         self.skybox_raw[index as usize * 3 + 2],
+        //     );
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
@@ -107,6 +176,7 @@ impl Camera {
 
         let potential_hit = world.hit(ray, &mut Interval::new(0.001, f32::INFINITY));
         let Some(hit) = potential_hit else {
+            return self.skybox(ray);
             return self.background_color();
         };
 
