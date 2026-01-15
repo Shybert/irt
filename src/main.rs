@@ -1,7 +1,9 @@
 mod irt;
 use irt::*;
+use pixels::{Pixels, SurfaceTexture};
 use winit::{
     application::ApplicationHandler,
+    dpi::LogicalSize,
     event::WindowEvent,
     event_loop::{ControlFlow, EventLoop},
     window::Window,
@@ -11,6 +13,7 @@ use std::{
     fs::File,
     io::{BufRead, BufReader},
     rc::Rc,
+    sync::Arc,
     time::Instant,
 };
 
@@ -358,7 +361,7 @@ fn scene_robot() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         16. / 9.,
-        Degrees(30.),
+        Degrees(90.),
         400,
         look_from,
         look_at,
@@ -378,7 +381,7 @@ fn armadillos() {
     let up = Vec3::new(0., 1., 0.);
     let camera = Camera::new(
         16. / 9.,
-        Degrees(30.),
+        Degrees(90.),
         400,
         look_from,
         look_at,
@@ -403,16 +406,28 @@ fn armadillos() {
 
 #[derive(Default)]
 struct App {
-    window: Option<Window>,
+    window: Option<Arc<Window>>,
+    pixels: Option<Pixels<'static>>,
 }
 
 impl ApplicationHandler for App {
     fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
-        self.window = Some(
+        let size = LogicalSize::new(400, 400);
+        let window = Arc::new(
             event_loop
-                .create_window(Window::default_attributes().with_title("Path tracing"))
+                .create_window(
+                    Window::default_attributes()
+                        .with_title("Path tracing")
+                        .with_inner_size(size),
+                )
                 .unwrap(),
-        )
+        );
+        self.window = Some(window.clone());
+
+        let (width, height) = self.window.as_ref().unwrap().inner_size().into();
+        let surface_texture = SurfaceTexture::new(width, height, window.clone());
+        self.pixels = Some(Pixels::new(size.width, size.height, surface_texture).unwrap());
+        window.request_redraw();
     }
 
     fn window_event(
@@ -427,7 +442,19 @@ impl ApplicationHandler for App {
                 event_loop.exit();
             }
             WindowEvent::RedrawRequested => {
-                self.window.as_ref().unwrap().request_redraw();
+                for pixel in self
+                    .pixels
+                    .as_mut()
+                    .unwrap()
+                    .frame_mut()
+                    .chunks_exact_mut(4)
+                {
+                    pixel[0] = 0x20;
+                    pixel[1] = 0x40;
+                    pixel[2] = 0xFF;
+                    pixel[3] = 0xFF;
+                }
+                self.pixels.as_ref().unwrap().render().unwrap();
             }
             _ => (),
         }
